@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reference · Python Operation Costs</title>
+<link rel="icon" href="../assets/favicon.svg">
+<link rel="stylesheet" href="../assets/lesson.css">
+</head>
+<body>
+
+<p class="eyebrow"><a href="../index.html">Course</a> · Reference</p>
+<h1>Python Operation Costs</h1>
+<p class="subtitle">What every line actually costs. The accidental O(n²) you wrote is almost certainly on this page.</p>
+
+<div class="keystone">
+  <span class="big">A loop is O(n) × the cost of its body</span>
+  <span class="cap">In Python the body is frequently <em>not</em> O(1). That is the whole problem.</span>
+</div>
+
+<p>Figures below are from the official <a href="https://wiki.python.org/moin/TimeComplexity">Python Wiki — TimeComplexity</a>, which documents CPython's actual implementation. <span class="mono">n</span> is the size of the container; <span class="mono">k</span> is the size of the argument or slice.</p>
+
+<h2 id="list">list</h2>
+
+<p>Internally an array. The expensive operations are the ones that touch the front, because everything after it must shift.<sup>1</sup></p>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Operation</th><th class="num">Cost</th><th>In a contest</th></tr></thead>
+  <tbody>
+    <tr><td><code>a[i]</code>, <code>a[i] = x</code></td><td class="num">O(1)</td><td>Free. Index all you like.</td></tr>
+    <tr><td><code>len(a)</code></td><td class="num">O(1)</td><td>Free — the length is stored.</td></tr>
+    <tr><td><code>a.append(x)</code></td><td class="num">O(1)</td><td>Free. <em>Amortised</em> — see <a href="#amortised">below</a>.</td></tr>
+    <tr><td><code>a.pop()</code></td><td class="num">O(1)</td><td>Free. Popping the <em>end</em> only.</td></tr>
+    <tr><td><code>a.pop(0)</code></td><td class="num">O(n)</td><td><strong>Trap.</strong> Use <a href="#deque"><code>deque</code></a> for a queue.</td></tr>
+    <tr><td><code>a.insert(i, x)</code></td><td class="num">O(n)</td><td><strong>Trap.</strong> Shifts the tail every call.</td></tr>
+    <tr><td><code>del a[i]</code></td><td class="num">O(n)</td><td><strong>Trap.</strong> Same shifting cost.</td></tr>
+    <tr><td><code>x in a</code></td><td class="num">O(n)</td><td><strong>The classic trap.</strong> Use a <a href="#set"><code>set</code></a>.</td></tr>
+    <tr><td><code>a.count(x)</code>, <code>a.index(x)</code></td><td class="num">O(n)</td><td>Full scan, every call.</td></tr>
+    <tr><td><code>min(a)</code>, <code>max(a)</code>, <code>sum(a)</code></td><td class="num">O(n)</td><td>Fine once. Fatal inside a loop.</td></tr>
+    <tr><td><code>a[i:j]</code></td><td class="num">O(k)</td><td><strong>Copies.</strong> Slicing is never a view.</td></tr>
+    <tr><td><code>a.sort()</code>, <code>sorted(a)</code></td><td class="num">O(n log n)</td><td>Cheap, and the fastest thing you own.</td></tr>
+    <tr><td><code>a.copy()</code>, <code>list(a)</code></td><td class="num">O(n)</td><td>Watch for this hiding in a loop.</td></tr>
+    <tr><td><code>[0] * n</code></td><td class="num">O(n)</td><td>The right way to preallocate.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="set">set &nbsp;<span class="mono" style="font-size:.8rem;font-weight:normal">— and frozenset</span></h2>
+
+<p>Hash-based. The single most valuable container in competitive Python: it turns O(n) membership into O(1).</p>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Operation</th><th class="num">Cost</th><th>In a contest</th></tr></thead>
+  <tbody>
+    <tr><td><code>x in s</code></td><td class="num">O(1)</td><td><strong>The reason sets exist.</strong> Worst case O(n), never seen in practice.</td></tr>
+    <tr><td><code>s.add(x)</code>, <code>s.discard(x)</code></td><td class="num">O(1)</td><td>Free.</td></tr>
+    <tr><td><code>s | t</code> (union)</td><td class="num">O(len s + len t)</td><td>Builds a new set. Not free.</td></tr>
+    <tr><td><code>s &amp; t</code> (intersection)</td><td class="num">O(min(s, t))</td><td>Cheaper than union — it scans the smaller.</td></tr>
+    <tr><td><code>s - t</code> (difference)</td><td class="num">O(len s)</td><td>Proportional to the left side.</td></tr>
+    <tr><td><code>s ^ t</code> (symmetric)</td><td class="num">O(len s)</td><td>—</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p class="note">
+<strong>Sets are unordered.</strong> There is no “smallest element of a set” in O(1) — <code>min(s)</code> is O(n). If you need the minimum repeatedly, you want a <a href="#heapq">heap</a>, not a set.
+</p>
+
+<h2 id="dict">dict</h2>
+
+<p>Same hash table as <code>set</code>, with values attached. Since Python 3.7 it preserves insertion order, free of charge.</p>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Operation</th><th class="num">Cost</th><th>In a contest</th></tr></thead>
+  <tbody>
+    <tr><td><code>k in d</code>, <code>d[k]</code>, <code>d[k] = v</code></td><td class="num">O(1)</td><td>Free. Your default lookup structure.</td></tr>
+    <tr><td><code>del d[k]</code></td><td class="num">O(1)</td><td>Free.</td></tr>
+    <tr><td><code>for k in d</code></td><td class="num">O(n)</td><td>Expected.</td></tr>
+    <tr><td><code>d.copy()</code></td><td class="num">O(n)</td><td>Trap when nested in a loop.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Two standard-library shortcuts that save real contest time:</p>
+
+<pre><code>from collections import defaultdict, Counter
+
+adj = defaultdict(list)          <span class="cmt"># no key-exists check needed</span>
+adj[u].append(v)
+
+freq = Counter(a)                <span class="cmt"># O(n) frequency table, one line</span>
+freq.most_common(3)              <span class="cmt"># top-3, already sorted</span></code></pre>
+
+<h2 id="deque">collections.deque</h2>
+
+<p>A doubly-linked list of blocks. Use it whenever you need a <strong>queue</strong> — which in practice means every BFS you will ever write.<sup>2</sup></p>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Operation</th><th class="num">Cost</th><th>vs. list</th></tr></thead>
+  <tbody>
+    <tr><td><code>q.append(x)</code>, <code>q.pop()</code></td><td class="num">O(1)</td><td>Same as list.</td></tr>
+    <tr><td><code>q.appendleft(x)</code>, <code>q.popleft()</code></td><td class="num">O(1)</td><td><strong>O(n) on a list.</strong> This is the whole point.</td></tr>
+    <tr><td><code>q[i]</code> in the middle</td><td class="num">O(n)</td><td>Worse than list. Don't index a deque.</td></tr>
+    <tr><td><code>q.rotate(k)</code></td><td class="num">O(k)</td><td>No list equivalent.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<pre><code>from collections import deque
+q = deque([start])
+while q:
+    node = q.popleft()      <span class="cmt"># O(1) — with a list this is O(n), so BFS becomes O(n²)</span></code></pre>
+
+<h2 id="strings">str</h2>
+
+<p>Strings are <strong>immutable</strong>, and that changes the arithmetic completely.</p>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Operation</th><th class="num">Cost</th><th>In a contest</th></tr></thead>
+  <tbody>
+    <tr><td><code>s[i]</code>, <code>len(s)</code></td><td class="num">O(1)</td><td>Free.</td></tr>
+    <tr><td><code>s[i:j]</code></td><td class="num">O(k)</td><td>Copies, like list slicing.</td></tr>
+    <tr><td><code>s += c</code> in a loop</td><td class="num">O(n²)</td><td><strong>Trap.</strong> Rebuilds the whole string each time.</td></tr>
+    <tr><td><code>"".join(parts)</code></td><td class="num">O(n)</td><td><strong>The fix.</strong> Collect in a list, join once.</td></tr>
+    <tr><td><code>sub in s</code></td><td class="num">O(n·k)</td><td>Fine for one check; not inside a loop.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<pre><code><span class="cmt"># Wrong — O(n²)</span>
+out = ""
+for x in results: out += str(x) + "\n"
+
+<span class="cmt"># Right — O(n)</span>
+print("\n".join(map(str, results)))</code></pre>
+
+<h2 id="heapq">heapq &amp; bisect</h2>
+
+<p>Two stdlib modules that buy you a whole complexity class. Both are written in C.</p>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Operation</th><th class="num">Cost</th><th>Use it for</th></tr></thead>
+  <tbody>
+    <tr><td><code>heapq.heappush(h, x)</code></td><td class="num">O(log n)</td><td rowspan="2">Repeatedly taking the smallest item: Dijkstra, scheduling, top-k.</td></tr>
+    <tr><td><code>heapq.heappop(h)</code></td><td class="num">O(log n)</td></tr>
+    <tr><td><code>heapq.heapify(a)</code></td><td class="num">O(n)</td><td>Cheaper than n pushes. Always heapify a list you already have.</td></tr>
+    <tr><td><code>h[0]</code> (peek)</td><td class="num">O(1)</td><td>Look without popping.</td></tr>
+    <tr><td><code>bisect.bisect_left(a, x)</code></td><td class="num">O(log n)</td><td>Binary search on a <strong>sorted</strong> list. See <a href="technique-by-budget.html">Technique by Budget</a>.</td></tr>
+    <tr><td><code>bisect.insort(a, x)</code></td><td class="num">O(n)</td><td><strong>Trap.</strong> The search is O(log n) but the insert still shifts.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p class="note">
+<strong>Python has no max-heap.</strong> Push <code>-x</code> and negate on the way out. It is the standard trick, not a hack.
+</p>
+
+<h2 id="amortised">A word on “amortised”</h2>
+
+<p><code>a.append(x)</code> is listed as O(1), but occasionally the list is full and CPython must allocate a bigger array and copy everything — an O(n) step. It is still called O(1) because those expensive steps are rare enough that <strong>n appends cost O(n) in total</strong>. The cost is spread — <em>amortised</em> — across all the calls.</p>
+
+<p>What this means for you: <strong>budget against the total, not the worst single call.</strong> A loop doing n appends is O(n), full stop. The same reasoning is what makes a <a href="../lessons/0004-two-pointers.html">two-pointer</a> loop O(n) despite its nested <code>while</code>.</p>
+
+<h2>The five that actually cost people contests</h2>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Instead of…</th><th>Write…</th><th class="num">Saves</th></tr></thead>
+  <tbody>
+    <tr><td><code>x in my_list</code></td><td><code>x in my_set</code></td><td class="num">O(n) → O(1)</td></tr>
+    <tr><td><code>a.pop(0)</code></td><td><code>deque.popleft()</code></td><td class="num">O(n) → O(1)</td></tr>
+    <tr><td><code>s += c</code> in a loop</td><td><code>"".join(parts)</code></td><td class="num">O(n²) → O(n)</td></tr>
+    <tr><td><code>print()</code> per line</td><td>one <code>print("\n".join(…))</code></td><td class="num">huge constant</td></tr>
+    <tr><td><code>input()</code></td><td><code>sys.stdin.readline()</code></td><td class="num">~3× on input-heavy problems</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p class="note">
+<strong>The general rule.</strong> Work pushed into a C built-in — <code>sorted</code>, <code>sum</code>, <code>join</code>, set operations — runs at near-C++ speed. The same work written as a Python <code>for</code> loop runs 10–50× slower. When two solutions have the same complexity, <em>pick the one with fewer Python-level iterations.</em> See <a href="complexity-budget.html#the-python-tax">the Python tax</a>.
+</p>
+
+<div class="footer">
+  <h3>Notes</h3>
+  <p><span class="mono">1.</span> Python Wiki: <em>“Internally, a list is represented as an array; the largest costs come from growing beyond the current allocation size … or from inserting or deleting somewhere near the beginning.”</em></p>
+  <p><span class="mono">2.</span> Python Wiki: a deque is <em>“represented internally as a doubly linked list … Both ends are accessible, but even looking at the middle is slow.”</em></p>
+
+  <h3>Source</h3>
+  <p><a href="https://wiki.python.org/moin/TimeComplexity">Python Wiki — TimeComplexity</a>. Official, describes CPython as actually implemented. Every figure on this page comes from it.</p>
+
+  <h3>Related</h3>
+  <ul>
+    <li>Reference: <a href="complexity-budget.html">The Complexity Budget Table</a> — what you can afford</li>
+    <li>Reference: <a href="technique-by-budget.html">Technique by Budget</a> — what to write</li>
+    <li>Reference: <a href="glossary.html">Glossary</a></li>
+    <li>Lesson: <a href="../lessons/0002-counting-loops.html">0002 — Counting loops</a></li>
+  </ul>
+  <p class="noprint"><em>Print this. It is the page you will reach for mid-contest.</em></p>
+</div>
+
+</body>
+</html>

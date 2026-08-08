@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reference · Bitwise &amp; Bitmask Cheat Sheet</title>
+<link rel="icon" href="../assets/favicon.svg">
+<link rel="stylesheet" href="../assets/lesson.css">
+</head>
+<body>
+
+<p class="eyebrow"><a href="../index.html">Course</a> · Reference</p>
+<h1>Bitwise &amp; Bitmask Cheat Sheet</h1>
+<p class="subtitle">Python syntax for treating an integer as a set. Everything here is verified against CPython; the C++ advice that does <em>not</em> port is marked.</p>
+
+<h2>Operators</h2>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th class="num">Op</th><th>Meaning</th><th class="num">Example</th></tr></thead>
+  <tbody>
+    <tr><td class="num">a &amp; b</td><td>AND: 1 where both are 1</td><td class="num">0b0101 &amp; 0b0011 = 0b0001</td></tr>
+    <tr><td class="num">a | b</td><td>OR: 1 where either is 1</td><td class="num">0b0101 | 0b0011 = 0b0111</td></tr>
+    <tr><td class="num">a ^ b</td><td>XOR: 1 where they differ</td><td class="num">0b0101 ^ 0b0011 = 0b0110</td></tr>
+    <tr><td class="num">a &lt;&lt; k</td><td>Left shift = × 2<sup>k</sup></td><td class="num">1 &lt;&lt; 3 = 8</td></tr>
+    <tr><td class="num">a &gt;&gt; k</td><td>Right shift = floor ÷ 2<sup>k</sup></td><td class="num">0b1100 &gt;&gt; 2 = 0b0011</td></tr>
+    <tr><td class="num">~a</td><td>Invert all bits = <span class="mono">−a−1</span></td><td class="num">~5 = −6 &nbsp;<strong>(see trap)</strong></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p><strong>Precedence</strong> (tightest first): <span class="mono">~</span>, then <span class="mono">&lt;&lt; &gt;&gt;</span>, then <span class="mono">&amp;</span>, then <span class="mono">^</span>, then <span class="mono">|</span>, then comparisons.<sup>2</sup> Consequences worth knowing:</p>
+
+<ul>
+  <li><code>mask &gt;&gt; i &amp; 1</code> means <code>(mask &gt;&gt; i) &amp; 1</code>. Correct as written.</li>
+  <li><code>mask &amp; 1 == 1</code> means <code>(mask &amp; 1) == 1</code>. <strong>Safe in Python</strong>, unlike C where it is a classic bug.</li>
+  <li><code>a &amp; b | c</code> means <code>(a &amp; b) | c</code>. Bracket anyway for the reader.</li>
+</ul>
+
+<h2>Single-bit idioms</h2>
+
+<pre><code>mask |  (1 &lt;&lt; i)      <span class="cmt"># add item i</span>
+mask &amp;  ~(1 &lt;&lt; i)     <span class="cmt"># remove item i</span>
+mask ^  (1 &lt;&lt; i)      <span class="cmt"># toggle item i</span>
+mask &gt;&gt; i &amp; 1         <span class="cmt"># test item i  → 0 or 1</span>
+mask &amp;  (1 &lt;&lt; i)      <span class="cmt"># test item i  → 0 or nonzero</span></code></pre>
+
+<h2>Whole-set idioms</h2>
+
+<pre><code>0                     <span class="cmt"># empty set</span>
+(1 &lt;&lt; n) - 1          <span class="cmt"># full set: n ones</span>
+1 &lt;&lt; n                <span class="cmt"># 2^n, the number of subsets</span>
+
+a &amp; b                 <span class="cmt"># intersection</span>
+a | b                 <span class="cmt"># union</span>
+a &amp; ~b                <span class="cmt"># difference (a minus b)  — safe, the AND clips</span>
+full ^ a              <span class="cmt"># complement — NOT ~a, see below</span>
+a &amp; b == a            <span class="cmt"># a is a subset of b</span>
+
+mask.bit_count()      <span class="cmt"># size of the set (Python 3.10+)</span>
+bin(mask).count("1")  <span class="cmt"># size of the set (any version)</span>
+mask.bit_length()     <span class="cmt"># index of highest set bit, + 1</span></code></pre>
+
+<p class="note">
+<strong>The trap: <code>~a</code> is not a complement in Python.</strong> The CPH table lists <span class="mono">~a</span> for set complement, but that assumes a fixed-width C++ <code>int</code>. Python's <em>“integers have unlimited precision”</em>,<sup>2</sup> so there is no width to invert within and <code>~0b0101</code> is <span class="mono">−6</span>, not <span class="mono">0b1010</span>. Always complement with <code>full ^ a</code> where <code>full = (1 &lt;&lt; n) - 1</code>. Difference via <code>a &amp; ~b</code> stays fine, because the AND discards the runaway high bits.
+</p>
+
+<h2>Enumeration templates</h2>
+
+<h3>All 2<sup>n</sup> subsets</h3>
+
+<pre><code>for mask in range(1 &lt;&lt; n):
+    chosen = [a[i] for i in range(n) if mask &gt;&gt; i &amp; 1]
+    ...</code></pre>
+
+<p><span class="mono">O(2<sup>n</sup>·n)</span>: 2<sup>n</sup> masks times n bit tests. Drop to <span class="mono">O(2<sup>n</sup>)</span> when you only need the size, by using <code>bit_count()</code> instead of the inner loop.</p>
+
+<h3>Subsets of exactly k elements</h3>
+
+<pre><code>for mask in range(1 &lt;&lt; n):
+    if mask.bit_count() == k:
+        ...</code></pre>
+
+<p>Still <span class="mono">O(2<sup>n</sup>)</span> because you filter after generating. If <span class="mono">k</span> is small, <code>itertools.combinations(range(n), k)</code> generates only the C(n,k) you want, in C.</p>
+
+<h3>Every subset of a given mask</h3>
+
+<pre><code>sub = mask
+while sub:
+    ...              <span class="cmt"># process sub</span>
+    sub = (sub - 1) &amp; mask
+<span class="cmt"># the empty subset is not visited by the loop; handle it separately</span></code></pre>
+
+<p>Over all masks this totals <span class="mono">O(3<sup>n</sup>)</span>, not <span class="mono">O(4<sup>n</sup>)</span>. Needed for bitmask DP; beyond the current mission, but this is the idiom you will look up.</p>
+
+<h2>Bit tricks</h2>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th class="num">Expression</th><th>Does</th><th>Use for</th></tr></thead>
+  <tbody>
+    <tr><td class="num">x &amp; (x - 1)</td><td>Clears the lowest set bit</td><td>Looping once per set bit</td></tr>
+    <tr><td class="num">x &amp; -x</td><td>Isolates the lowest set bit</td><td>Fenwick trees</td></tr>
+    <tr><td class="num">(x &amp; -x).bit_length() - 1</td><td>Index of the lowest set bit</td><td>Finding the first item in a set</td></tr>
+    <tr><td class="num">x and x &amp; (x - 1) == 0</td><td>True if x is a power of two</td><td>Checking single-element sets. The leading <code>x</code> is required: without it, <span class="mono">0</span> reports as a power of two.</td></tr>
+    <tr><td class="num">x ^ (x &gt;&gt; 1)</td><td>Gray code of x</td><td>Sequences differing by one bit</td></tr>
+    <tr><td class="num">x &amp; 1</td><td>Parity of x</td><td>Odd/even without <code>%</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p><strong>XOR is its own inverse</strong>: <span class="mono">x ^ x = 0</span> and <span class="mono">x ^ 0 = x</span>.<sup>3</sup> So XOR-ing a whole list cancels every value that appears twice and leaves the one that appears once. It is also associative and commutative, so order never matters.</p>
+
+<h2>Python notes for the judge</h2>
+
+<ul>
+  <li><code>int.bit_count()</code> arrived in <strong>Python 3.10</strong>.<sup>2</sup> On an older judge use <code>bin(x).count("1")</code>, which is also C-speed.</li>
+  <li>Integers are arbitrary precision, so shifts never overflow. A <code>1 &lt;&lt; 10000</code> is legal and slow, not wrong.</li>
+  <li>Negative shift counts raise <code>ValueError</code>.<sup>2</sup></li>
+  <li>A bitmask loop is <em>interpreted</em>. <code>itertools</code> generates in C. For the same algorithm, <code>combinations</code> can beat a hand-written mask loop on the clock even though both are <span class="mono">O(2<sup>n</sup>·n)</span>.</li>
+</ul>
+
+<h2>Before you submit</h2>
+
+<ol>
+  <li>Did you use <code>~a</code> where you meant <code>full ^ a</code>?</li>
+  <li>Is <span class="mono">n</span> the number of <em>items</em>, so the loop bound is <code>1 &lt;&lt; n</code> and not <code>n</code>?</li>
+  <li>Does the empty mask (<span class="mono">0</span>) need handling, and is it a valid answer?</li>
+  <li>Are you enumerating each partition twice by symmetry? Halve the range if so.</li>
+  <li>Substitute and count: 2<sup>n</sup> × body. (<a href="complexity-budget.html">budget table</a>)</li>
+</ol>
+
+<div class="footer">
+  <h3>Sources</h3>
+  <p><span class="mono">1.</span> <a href="https://cses.fi/book/book.pdf">Competitive Programmer's Handbook</a>, ch. 10 “Bit manipulation”, §10.1 to §10.3, pp. 95 to 100.</p>
+  <p><span class="mono">2.</span> <a href="https://docs.python.org/3/library/stdtypes.html#bitwise-operations-on-integer-types">Python documentation &mdash; bitwise operations on integers</a>; <a href="https://docs.python.org/3/reference/expressions.html#operator-precedence">operator precedence</a>.</p>
+  <p><span class="mono">3.</span> <a href="https://usaco.guide/silver/intro-bitwise">USACO Guide &mdash; Intro to Bitwise Operators (Silver)</a>.</p>
+
+  <h3>Related</h3>
+  <ul>
+    <li>Lesson: <a href="../lessons/0006-bitmasks.html">0006 &mdash; Bitmasks</a></li>
+    <li>Lesson: <a href="../lessons/0005-complete-search.html">0005 &mdash; Complete search</a></li>
+    <li>Reference: <a href="technique-by-budget.html">Technique by Budget</a></li>
+    <li>Reference: <a href="complexity-budget.html">The Complexity Budget Table</a></li>
+  </ul>
+  <p class="noprint"><em>Print this alongside the budget table. The <code>~a</code> trap is the one that will bite you in a contest.</em></p>
+</div>
+
+</body>
+</html>

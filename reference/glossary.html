@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reference · Glossary</title>
+<link rel="icon" href="../assets/favicon.svg">
+<link rel="stylesheet" href="../assets/lesson.css">
+<style>
+  dl { margin: 1.2rem 0 0; }
+  dt {
+    font-weight: 600;
+    margin-top: 1.3rem;
+  }
+  dt .mono, dt code { font-weight: normal; }
+  dd { margin: .2rem 0 0; color: var(--muted); }
+  dd strong { color: var(--fg); font-weight: 600; }
+  dd .ex {
+    display: block;
+    margin-top: .3rem;
+    font-size: .88rem;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+
+<p class="eyebrow"><a href="../index.html">Course</a> · Reference</p>
+<h1>Glossary</h1>
+<p class="subtitle">The vocabulary of the sport. Every term used across the lessons, defined once, here.</p>
+
+<h2>Complexity</h2>
+
+<dl>
+  <dt>Big O &nbsp;<span class="mono">O(f(n))</span></dt>
+  <dd>An upper bound on how a cost <strong>grows</strong> as the input grows. Constants and lower-order terms are discarded, because at contest scale only the growth shape decides pass or fail.
+  <span class="ex">n²/2 + 3n + 7 is O(n²).</span></dd>
+
+  <dt>Time complexity</dt>
+  <dd>How the number of operations grows with <span class="mono">n</span>. The thing you compare against your <strong>budget</strong>.</dd>
+
+  <dt>Space complexity</dt>
+  <dd>How <em>memory</em> grows with <span class="mono">n</span>. Judged against a memory limit, usually 256 MB. An <span class="mono">n × n</span> table with <span class="mono">n = 10<sup>5</sup></span> is 10<sup>10</sup> cells — impossible, regardless of time.</dd>
+
+  <dt>Auxiliary space</dt>
+  <dd>Memory your algorithm allocates <em>beyond</em> the input itself. Sorting in place is O(1) auxiliary; building a set of every element is O(n).</dd>
+
+  <dt>Constant factor</dt>
+  <dd>The multiplier Big O throws away. Irrelevant to the complexity class, but decisive when you are borderline — and it is why <strong>Python</strong> and C++ solutions of identical complexity do not both pass.</dd>
+
+  <dt>Amortised</dt>
+  <dd>A cost averaged over a sequence of operations. <code>list.append</code> is occasionally O(n) when the array must grow, but n appends total O(n), so it is called <strong>amortised O(1)</strong>. Budget against the total, not the worst single call.
+  <span class="ex">See <a href="python-costs.html#amortised">Python Operation Costs</a>.</span></dd>
+
+  <dt>Complexity classes, cheapest first</dt>
+  <dd><span class="mono">O(1)</span> constant · <span class="mono">O(log n)</span> logarithmic · <span class="mono">O(n)</span> linear · <span class="mono">O(n log n)</span> linearithmic · <span class="mono">O(n²)</span> quadratic · <span class="mono">O(n³)</span> cubic · <span class="mono">O(2ⁿ)</span> exponential · <span class="mono">O(n!)</span> factorial.</dd>
+</dl>
+
+<h2>Contest mechanics</h2>
+
+<dl>
+  <dt>Constraints</dt>
+  <dd>The bounds printed in the problem statement (<code>1 ≤ n ≤ 2·10<sup>5</sup></code>). <strong>The most informative line in the problem</strong> — it tells you the intended complexity before you write anything.
+  <span class="ex">See <a href="../lessons/0001-from-n-to-your-time-budget.html">Lesson 0001</a>.</span></dd>
+
+  <dt>Budget</dt>
+  <dd>Roughly 10<sup>8</sup> simple operations per second on a judge. Your total allowance for the whole solution.
+  <span class="ex">See <a href="complexity-budget.html">The Complexity Budget Table</a>.</span></dd>
+
+  <dt>TLE &nbsp;<span class="mono">Time Limit Exceeded</span></dt>
+  <dd>Your solution was correct but too slow. Almost always a wrong complexity class, not a slow line.</dd>
+
+  <dt>MLE &nbsp;<span class="mono">Memory Limit Exceeded</span></dt>
+  <dd>You allocated more than the limit. Usually a table sized on the wrong variable.</dd>
+
+  <dt>WA &nbsp;· RE &nbsp;· AC</dt>
+  <dd><strong>Wrong Answer</strong> — correct-shaped output, wrong content. <strong>Runtime Error</strong> — a crash, in Python usually an index error or recursion limit. <strong>Accepted</strong> — you're done.</dd>
+
+  <dt>Setter &nbsp;·&nbsp; Editorial</dt>
+  <dd>The <strong>setter</strong> is the author of the problem; they chose the constraints deliberately. The <strong>editorial</strong> is the official solution published afterwards — reading them is the fastest way to improve.</dd>
+
+  <dt>Sum-of-n clause</dt>
+  <dd><em>“the sum of n over all test cases does not exceed 2·10<sup>5</sup>”</em>. Budget against that <strong>sum</strong>, not per test case. Easy to misread and TLE on.</dd>
+
+  <dt>PyPy</dt>
+  <dd>An alternative Python implementation with a JIT compiler, offered by some judges. Often several times faster on loop-heavy code. If it is on the language list, use it.</dd>
+</dl>
+
+<h2>Techniques</h2>
+
+<dl>
+  <dt>Brute force &nbsp;<span class="mono">complete search</span></dt>
+  <dd>Try every possibility. Always correct, usually too slow — but when the constraints are small it is the <em>intended</em> solution, and reaching for something clever wastes contest time. The two names are interchangeable; USACO Guide and CPH both prefer <em>complete search</em>.
+  <span class="ex">See <a href="../lessons/0005-complete-search.html">Lesson 0005</a>.</span></dd>
+
+  <dt>Search space</dt>
+  <dd>The set of all candidate answers a complete search walks through: every subset (2<sup>n</sup>), every permutation (n!), every assignment (k<sup>n</sup>). Sizing it <em>before</em> coding is the whole skill — it is the number you compare against the <strong>budget</strong>.</dd>
+
+  <dt>Backtracking</dt>
+  <dd>Building a solution one choice at a time, and undoing the last choice when the partial solution reaches a dead end. The recursive shape of complete search, used when you want to abandon whole branches rather than generate every candidate in full.</dd>
+
+  <dt>Pruning</dt>
+  <dd>Cutting off a branch of a backtracking search as soon as it cannot lead to a valid solution. <strong>Does not change the complexity class</strong> — the worst case stays exponential — but can improve the constant by orders of magnitude. One of the few places where “still O(2<sup>n</sup>)” and “now passes” are both true.</dd>
+
+  <dt>Meet in the middle</dt>
+  <dd>Split the input in half, enumerate each half separately (2<sup>n/2</sup> each), then combine. Since 2<sup>n/2</sup> = √(2<sup>n</sup>), it takes the square root of the work. The fingerprint is <span class="mono">n ≤ 40</span> on a subset-flavoured question.</dd>
+
+  <dt>Binary search</dt>
+  <dd>Halve the search space each step, giving <strong>O(log n)</strong>. Requires the data to be sorted, or the property being searched to be <strong>monotonic</strong>.
+  <span class="ex">See <a href="../lessons/0003-where-log-n-comes-from.html">Lesson 0003</a>.</span></dd>
+
+  <dt>Binary search on the answer</dt>
+  <dd>Instead of searching the array, search the <em>answer space</em>: guess a value, ask a yes/no question about it, halve. Turns “find the smallest workable X” into O(log(range) × cost of the check).</dd>
+
+  <dt>Monotonic &nbsp;<span class="mono">predicate</span></dt>
+  <dd>A yes/no property that, once it flips, never flips back — <span class="mono">no no no yes yes yes</span>. <strong>Monotonicity is what licenses a binary search.</strong> Without it, halving may discard the answer.</dd>
+
+  <dt>Two pointers</dt>
+  <dd>Two indices sweeping an array, each moving forward only. Collapses O(n²) to <strong>O(n)</strong> because each pointer traverses the array at most once in total, however the loops are nested.
+  <span class="ex">See <a href="../lessons/0004-two-pointers.html">Lesson 0004</a>.</span></dd>
+
+  <dt>Sliding window</dt>
+  <dd>The two-pointer shape where the pair bounds a contiguous range that grows at the right and shrinks at the left. Standard for “longest/shortest subarray such that …”.</dd>
+
+  <dt>Prefix sums</dt>
+  <dd>Precompute running totals once in O(n), then answer any range-sum query in O(1) as <code>pre[j] - pre[i]</code>. Trades O(n) memory for removing a loop.</dd>
+
+  <dt>Invariant</dt>
+  <dd>A statement that stays true on every iteration of a loop. The tool for convincing yourself a two-pointer or binary-search loop is correct — and for finding the bug when it isn't.</dd>
+
+  <dt>Greedy</dt>
+  <dd>Take the locally best option at each step and never reconsider. Fast — usually O(n) or O(n log n) — but only correct when the problem has the structure to support it, which must be argued, not assumed.</dd>
+</dl>
+
+<h2>Bitwise</h2>
+
+<dl>
+  <dt>Bitmask</dt>
+  <dd>An integer used to represent a subset: bit <span class="mono">i</span> is 1 exactly when item <span class="mono">i</span> is in the set. The integers <span class="mono">0</span> to <span class="mono">2<sup>n</sup>−1</span> are then precisely the subsets, so <code>for mask in range(1 &lt;&lt; n)</code> enumerates all of them.
+  <span class="ex">See <a href="../lessons/0006-bitmasks.html">Lesson 0006</a> and the <a href="bitwise-cheatsheet.html">cheat sheet</a>.</span></dd>
+
+  <dt>Popcount &nbsp;<span class="mono">population count</span></dt>
+  <dd>The number of 1 bits in an integer, i.e. the size of the set it represents. <code>mask.bit_count()</code> in Python 3.10+, else <code>bin(mask).count("1")</code>. Using it removes the inner loop, taking subset enumeration from O(2<sup>n</sup>·n) to O(2<sup>n</sup>).</dd>
+
+  <dt>XOR &nbsp;<span class="mono">^</span></dt>
+  <dd>1 where two bits differ. <strong>Its own inverse</strong>: <span class="mono">x ^ x = 0</span> and <span class="mono">x ^ 0 = x</span>, and it is associative and commutative. XOR-ing a whole list cancels every value appearing twice, leaving the one that appears once.</dd>
+
+  <dt>Shift &nbsp;<span class="mono">&lt;&lt; &gt;&gt;</span></dt>
+  <dd><code>x &lt;&lt; k</code> multiplies by 2<sup>k</sup>; <code>x &gt;&gt; k</code> floor-divides by it. <code>1 &lt;&lt; n</code> is the standard way to write 2<sup>n</sup> in contest code.</dd>
+
+  <dt>Complement &nbsp;<span class="mono">the Python trap</span></dt>
+  <dd>Set complement is <strong>not</strong> <code>~a</code> in Python. Python integers have unlimited precision, so there is no width to invert within and <code>~a</code> is <span class="mono">−a−1</span>. Use <code>full ^ a</code> where <code>full = (1 &lt;&lt; n) - 1</code>. This is the one piece of C++ bitmask advice that does not port.</dd>
+</dl>
+
+<div class="footer">
+  <h3>Related</h3>
+  <ul>
+    <li>Reference: <a href="complexity-budget.html">The Complexity Budget Table</a> — what you can afford</li>
+    <li>Reference: <a href="technique-by-budget.html">Technique by Budget</a> — what to write</li>
+    <li>Reference: <a href="python-costs.html">Python Operation Costs</a> — what each line costs</li>
+  </ul>
+
+  <h3>Sources</h3>
+  <p>Complexity definitions follow <a href="https://usaco.guide/bronze/time-comp">USACO Guide — Time Complexity</a>; Python costs follow the <a href="https://wiki.python.org/moin/TimeComplexity">Python Wiki</a>; contest terminology follows <a href="https://codeforces.com/">Codeforces</a> usage.</p>
+
+  <p class="noprint"><em>A term used in a lesson but missing here is a bug — tell me and I'll add it.</em></p>
+</div>
+
+</body>
+</html>
