@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0005 · Complete search</title>
+<link rel="icon" href="../assets/favicon.svg">
+<link rel="stylesheet" href="../assets/lesson.css">
+<link rel="stylesheet" href="../assets/quiz.css">
+</head>
+<body>
+
+<p class="eyebrow"><a href="../index.html">Course</a> · Lesson 0005</p>
+<h1>Complete search</h1>
+<p class="subtitle">The two rows at the top of your budget table have never been used. They are the ones that say a tiny <em>n</em> is permission to stop thinking.</p>
+
+<h2>The rows you have been skipping</h2>
+
+<p>Open the <a href="../reference/complexity-budget.html">budget table</a> and look at the top:</p>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th class="num">If n is up to…</th><th>You can afford</th><th>Which usually means</th></tr></thead>
+  <tbody>
+    <tr><td class="num">10</td><td class="num">O(n!), O(n<sup>7</sup>)</td><td>Try every permutation. Brute force everything.</td></tr>
+    <tr><td class="num">20</td><td class="num">O(2<sup>n</sup>·n), O(n<sup>5</sup>)</td><td>Try every subset. Bitmask DP.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Every instinct the last four lessons gave you says these are typos. O(n!) is the worst complexity class in the table. You spent lesson 0004 collapsing an O(n²) solution into O(n) and now the table is offering you <em>factorial</em>.</p>
+
+<p>It is not a typo. It is the single most reliable signal in competitive programming, and it runs backwards from everything else you know.</p>
+
+<h2>The costing skill: where the cliff is</h2>
+
+<p>Before the technique, price it. Same habit as always: substitute the largest <span class="mono">n</span> and read off a number.</p>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th class="num">n</th><th class="num">2<sup>n</sup></th><th class="num">n!</th><th>Verdict at 10<sup>8</sup>/sec</th></tr></thead>
+  <tbody>
+    <tr><td class="num">10</td><td class="num">1,024</td><td class="num">3.6·10<sup>6</sup></td><td>Both instant.</td></tr>
+    <tr><td class="num">13</td><td class="num">8,192</td><td class="num">6.2·10<sup>9</sup></td><td>n! is dead. 2<sup>n</sup> is nothing.</td></tr>
+    <tr><td class="num">20</td><td class="num">10<sup>6</sup></td><td class="num">2.4·10<sup>18</sup></td><td>2<sup>n</sup> is comfortable.</td></tr>
+    <tr><td class="num">25</td><td class="num">3.4·10<sup>7</sup></td><td class="num">—</td><td>2<sup>n</sup> borderline. In Python, dead.</td></tr>
+    <tr><td class="num">30</td><td class="num">10<sup>9</sup></td><td class="num">—</td><td><strong>2<sup>n</sup> is dead too.</strong></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Two cliffs, and they are worth memorising because they are sharp:</p>
+
+<div class="keystone">
+  <span class="big">n! dies at 13. &nbsp; 2<sup>n</sup> dies at 25.</span>
+  <span class="cap">Below the cliff, brute force is free. Above it, no amount of cleverness in the loop body saves you.</span>
+</div>
+
+<p>Notice how much sharper these are than anything in lesson 0001. Going from <span class="mono">n = 200</span> to <span class="mono">n = 400</span> made an O(n²) solution 4× slower. Going from <span class="mono">n = 20</span> to <span class="mono">n = 21</span> makes a O(2<sup>n</sup>) solution <em>twice</em> as slow. One extra element doubles your entire runtime. That is what exponential means, and it is why the constraint is always tiny and always explicit.</p>
+
+<h2>The signal, and why it runs backwards</h2>
+
+<p>Lesson 0001 taught you that a large <span class="mono">n</span> forbids expensive solutions. The corollary is the thing nobody tells beginners:</p>
+
+<p class="note">
+<strong>A tiny <span class="mono">n</span> forbids <em>cheap</em> ones.</strong> If the setter had a clever O(n log n) solution in mind, why would they cap <span class="mono">n</span> at 20? They would not. A constraint of <span class="mono">n ≤ 20</span> is the setter telling you that no clever solution exists, or that finding one is harder than checking all 1,048,576 cases. Stop looking.
+</p>
+
+<p>This is the fingerprint. When you see <span class="mono">n ≤ 20</span>, <span class="mono">n ≤ 24</span>, or <span class="mono">n ≤ 10</span>, you have not been given a hard problem. You have been given permission to be stupid, quickly.</p>
+
+<p>The <em>Competitive Programmer's Handbook</em> puts the trade honestly: <em>“Complete search is a good technique if there is enough time to go through all the solutions, because the search is usually easy to implement and it always gives the correct answer.”</em><sup>1</sup> Easy to implement and always correct. Under contest pressure those are worth more than elegance.</p>
+
+<h2>The technique: three shapes</h2>
+
+<p>USACO Guide names the whole family in one sentence: <em>“In many problems (especially in Bronze) it suffices to check all possible cases in the solution space, whether it be all elements, all pairs of elements, or all subsets, or all permutations. Unsurprisingly, this is called complete search (or brute force), because it completely searches the entire solution space.”</em><sup>2</sup></p>
+
+<p>In Python you almost never write the generation yourself. <code>itertools</code> does all three in C.<sup>3</sup></p>
+
+<h3>All subsets: 2<sup>n</sup></h3>
+
+<p>“Choose any group of these items.” The classic: split <span class="mono">n</span> items into two piles as evenly as possible.</p>
+
+<pre><code>from itertools import combinations
+
+best = 10**18
+for k in range(n + 1):                 <span class="cmt"># every possible pile size</span>
+    for group in combinations(a, k):   <span class="cmt"># every pile of that size</span>
+        best = min(best, abs(sum(a) - 2 * sum(group)))</code></pre>
+
+<p>Summed over every <span class="mono">k</span>, that is <span class="mono">2<sup>n</sup></span> groups in total. <a href="0006-bitmasks.html">Lesson 0006</a> shows the faster way to write the same loop.</p>
+
+<h3>All permutations: n!</h3>
+
+<p>“Put these in the best order.” Travelling salesman on 10 cities, arranging letters, assigning jobs.</p>
+
+<pre><code>from itertools import permutations
+
+for p in permutations(a):              <span class="cmt"># n! orderings, lexicographic</span>
+    ...</code></pre>
+
+<p>The docs are precise about the count: <em>“given by <code>math.perm()</code> which computes <code>n! / (n - r)!</code>”</em>, and about the order: <em>“The permutation tuples are emitted in lexicographic order according to the order of the input iterable.”</em><sup>3</sup> That second fact is free correctness: sort your input and the output is already sorted, which is usually exactly what the problem wants printed.</p>
+
+<h3>All assignments: k<sup>n</sup></h3>
+
+<p>“Give each of <span class="mono">n</span> items one of <span class="mono">k</span> labels.”</p>
+
+<pre><code>from itertools import product
+
+for assign in product(range(k), repeat=n):    <span class="cmt"># k^n tuples</span>
+    ...</code></pre>
+
+<p class="note">
+<strong>Where the Python tax lands here.</strong> <code>itertools</code> generates in C and lazily, so producing the cases is nearly free and uses no memory. <strong>The cost is your loop body</strong>, which is interpreted, and it runs 2<sup>n</sup> or n! times. So price the body, not the generation: a 20-operation body inside a 2<sup>20</sup> loop is <span class="mono">2·10<sup>7</sup></span> interpreted operations, which is already at the edge. Keep brute-force bodies brutally short. One caveat from the docs on <code>product</code> specifically: <em>“Before product() runs, it completely consumes the input iterables, keeping pools of values in memory.”</em><sup>3</sup>
+</p>
+
+<h2>When the space is too big: prune it</h2>
+
+<p>Sometimes 2<sup>n</sup> or n! is too many, but most of those cases are obviously hopeless before you finish building them. Then you build solutions one piece at a time and abandon a partial solution the moment it cannot work. That is <strong>backtracking</strong>, and the abandoning is <strong>pruning</strong>.</p>
+
+<p>CPH describes the move exactly: <em>“The idea is to add ‘intelligence’ to the algorithm so that it will notice as soon as possible if a partial solution cannot be extended to a complete solution. Such optimizations can have a tremendous effect on the efficiency of the search.”</em><sup>1</sup></p>
+
+<pre><code>def solve(i, state):
+    if not viable(state):     <span class="cmt"># the prune: quit early, skip a whole subtree</span>
+        return
+    if i == n:
+        record(state); return
+    for choice in options(i):
+        solve(i + 1, apply(choice, state))</code></pre>
+
+<p>The honest catch: pruning does not change the complexity class. Worst case is still O(2<sup>n</sup>). It changes the constant, and for search problems the constant can be a factor of thousands. This is one of the few places in the sport where “it is still exponential” and “it now passes” are both true.</p>
+
+<h3>The escape hatch: meet in the middle</h3>
+
+<p>One thing worth recognising rather than mastering. If <span class="mono">n ≤ 40</span> and you need subsets, 2<sup>40</sup> is far too many, but you can split the input in half, enumerate 2<sup>20</sup> subsets of each half, and combine. CPH: <em>“using the meet in the middle technique, we can achieve a more efficient O(2<sup>n/2</sup>) time algorithm. Note that O(2<sup>n</sup>) and O(2<sup>n/2</sup>) are different complexities because 2<sup>n/2</sup> equals √(2<sup>n</sup>).”</em><sup>1</sup></p>
+
+<p>You do not need to write one today. You need to recognise the fingerprint: <strong><span class="mono">n ≤ 40</span> with a subset-flavoured question means meet in the middle</strong>, the same way <span class="mono">n ≤ 20</span> means plain subsets.</p>
+
+<h2>Check yourself</h2>
+
+<p>Mixed across all five lessons. The last two questions are the ones that matter: they test whether you can tell these rows apart from the ones you already knew.</p>
+
+<div class="quiz" data-quiz='[
+  {
+    "q": "A problem says <code>1 ≤ n ≤ 20</code>. What is the setter most likely telling you?",
+    "opts": [
+      "Check all subsets; no clever way exists",
+      "Sort the input and then scan it once",
+      "Use binary search on the answer range",
+      "Find a linear pass over the input data"
+    ],
+    "a": 0,
+    "why": "2<sup>20</sup> is about 10<sup>6</sup>, comfortably inside budget. A cap that tiny is deliberate: if an O(n log n) solution existed, the setter would have allowed n = 200000 to force you to find it. Tiny n is permission to brute force."
+  },
+  {
+    "q": "Roughly where does an O(n!) solution stop fitting inside the time budget?",
+    "opts": [
+      "At about n equals thirteen or so",
+      "At about n equals thirty or so",
+      "At about n equals one hundred",
+      "At about n equals two thousand"
+    ],
+    "a": 0,
+    "why": "12! is 4.8·10<sup>8</sup> and 13! is 6.2·10<sup>9</sup>, so the cliff sits right there. This is why permutation problems always cap n around 10: the setter is keeping you just under the edge."
+  },
+  {
+    "q": "Your O(2<sup>n</sup>) solution runs in time at <code>n = 20</code>. What happens at <code>n = 21</code>?",
+    "opts": [
+      "It takes about twice as long",
+      "It takes about ten times longer",
+      "It takes about one percent longer",
+      "It takes about the same time again"
+    ],
+    "a": 0,
+    "why": "Each extra element doubles the number of subsets. That is what makes exponential different in kind from polynomial: at O(n²), going 20 → 21 costs about 10% more; at O(2<sup>n</sup>) it costs 100% more. One element."
+  },
+  {
+    "q": "In Python, what actually costs you inside <code>for p in permutations(a):</code>?",
+    "opts": [
+      "The body of the loop, run n! times",
+      "The generating step, run n! times",
+      "The memory held by all n! tuples",
+      "The sorting done before it starts"
+    ],
+    "a": 0,
+    "why": "<code>itertools</code> generates in C and lazily, so generation is cheap and holds no memory. Every line of your interpreted loop body, though, runs n! times. Keep brute-force bodies brutally short."
+  },
+  {
+    "q": "Does pruning a backtracking search change its time complexity?",
+    "opts": [
+      "No, it changes only the constant factor",
+      "Yes, it makes the search fully linear",
+      "Yes, it removes one factor of n",
+      "No, and it never helps in practice"
+    ],
+    "a": 0,
+    "why": "The worst case is still O(2<sup>n</sup>): pruning cannot rule out an input where nothing gets pruned. But the constant can improve by a factor of thousands. This is a rare case where “still exponential” and “now passes” are both true."
+  },
+  {
+    "q": "Constraints say <code>n ≤ 40</code> and the question is about subsets. What is the fingerprint?",
+    "opts": [
+      "Meet in the middle, splitting n in half",
+      "Plain subset enumeration over all items",
+      "Sorting followed by a two pointer scan",
+      "Binary searching over the answer range"
+    ],
+    "a": 0,
+    "why": "2<sup>40</sup> is 10<sup>12</sup>, far too many. Splitting into halves gives 2·2<sup>20</sup>, about 10<sup>6</sup>. Since 2<sup>n/2</sup> = √(2<sup>n</sup>), the halving of the exponent is a square root of the work."
+  },
+  {
+    "q": "From lesson 0001: constraints say <code>n ≤ 200000</code>. What does that rule out?",
+    "opts": [
+      "Any double loop over all the pairs",
+      "Any use of sorting on the input data",
+      "Any single linear pass over inputs",
+      "Any use of a set for the lookups"
+    ],
+    "a": 0,
+    "why": "n² = 4·10<sup>10</sup>, about 400× over budget. Worth re-testing now because this lesson inverts the rule: large n forbids expensive solutions, tiny n forbids cheap ones. Both directions are signals, and confusing them is expensive."
+  }
+]'></div>
+
+<h2>Your turn</h2>
+
+<p>Two problems. Same habit: read the constraint, name the budget, name the technique, then type.</p>
+
+<ol>
+  <li><a href="https://cses.fi/problemset/task/1622">CSES 1622 &mdash; Creating Strings</a>. One <code>itertools</code> call and a <code>sorted(set(...))</code>. Notice that the lexicographic-order guarantee does the sorting work for you if the input is sorted first.</li>
+  <li><a href="https://cses.fi/problemset/task/1623">CSES 1623 &mdash; Apple Division</a>. <span class="mono">n ≤ 20</span>, split into two groups, minimise the difference. The canonical subset problem, and the one <a href="0006-bitmasks.html">lesson 0006</a> rewrites.</li>
+</ol>
+
+<p>For Apple Division, tell me the count you wrote down before coding. If you said 2<sup>20</sup> you have the skill; if you said 2<sup>20</sup> and then worried about the Python constant, you have the skill and the instinct.</p>
+
+<div class="footer">
+  <h3>Notes</h3>
+  <p><span class="mono">1.</span> <a href="https://cses.fi/book/book.pdf">Competitive Programmer's Handbook</a>, ch. 5 “Complete search”, p. 47. Pruning is §5.4 (p. 51), meet in the middle is §5.5 (p. 54).</p>
+  <p><span class="mono">2.</span> <a href="https://usaco.guide/bronze/intro-complete">USACO Guide &mdash; Basic Complete Search (Bronze)</a>.</p>
+  <p><span class="mono">3.</span> <a href="https://docs.python.org/3/library/itertools.html">Python documentation &mdash; <code>itertools</code></a>. Counts, ordering guarantees and the <code>product</code> memory caveat are quoted verbatim from that page.</p>
+
+  <h3>Read this next</h3>
+  <p><strong>Primary source:</strong> <a href="https://cses.fi/book/book.pdf">Competitive Programmer's Handbook</a>, ch. 5. Eight pages and it is the source for this lesson. Read §5.1 through §5.4; §5.5 is optional until you actually meet an <span class="mono">n ≤ 40</span>.</p>
+
+  <h3>Related in this workspace</h3>
+  <ul>
+    <li>Previous: <a href="0004-two-pointers.html">Lesson 0004 &mdash; Two pointers</a></li>
+    <li>Next: <a href="0006-bitmasks.html">Lesson 0006 &mdash; Bitmasks</a></li>
+    <li>Reference: <a href="../reference/technique-by-budget.html">Technique by Budget</a></li>
+    <li>Reference: <a href="../reference/complexity-budget.html">The Complexity Budget Table</a></li>
+    <li>Mission: <a href="../MISSION.md">why we are doing this</a></li>
+  </ul>
+
+  <div class="ask">
+    <strong>Stuck on anything here?</strong> Ask me. The best question after this lesson is “is this problem actually brute-forceable?”, because the answer is a two-line calculation and getting it wrong costs you a whole contest. Send me the constraints and we will price it together.
+  </div>
+</div>
+
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

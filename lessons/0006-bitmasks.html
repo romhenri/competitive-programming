@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0006 · Bitmasks</title>
+<link rel="icon" href="../assets/favicon.svg">
+<link rel="stylesheet" href="../assets/lesson.css">
+<link rel="stylesheet" href="../assets/quiz.css">
+</head>
+<body>
+
+<p class="eyebrow"><a href="../index.html">Course</a> · Lesson 0006</p>
+<h1>Bitmasks</h1>
+<p class="subtitle">A subset is an integer. Once you see that, the budget table's <span class="mono">O(2<sup>n</sup>·n)</span> stops being notation and becomes two nested loops you can count.</p>
+
+<h2>The dot-n you have never explained</h2>
+
+<p>The budget table row you used last lesson says <span class="mono">O(2<sup>n</sup>·n)</span>, not <span class="mono">O(2<sup>n</sup>)</span>. You have read past that <span class="mono">·n</span> five times now, the same way you read past <span class="mono">log n</span> before <a href="0003-where-log-n-comes-from.html">lesson 0003</a>.</p>
+
+<p>It is there because enumerating subsets is genuinely <em>two</em> loops: one over the 2<sup>n</sup> subsets, and one over the <span class="mono">n</span> elements to work out which are in it. This lesson gives you the representation that makes both loops obvious, and the counting falls out for free.</p>
+
+<h2>A subset is an integer</h2>
+
+<p>From the <em>Competitive Programmer's Handbook</em>: <em>“Every subset of a set {0, 1, 2, …, n−1} can be represented as an n bit integer whose one bits indicate which elements belong to the subset. This is an efficient way to represent sets, because every element requires only one bit of memory, and set operations can be implemented as bit operations.”</em><sup>1</sup></p>
+
+<p>Concretely, with <span class="mono">n = 5</span> items:</p>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th class="num">Integer</th><th class="num">Binary</th><th>Means the subset</th></tr></thead>
+  <tbody>
+    <tr><td class="num">0</td><td class="num">00000</td><td>{ } &nbsp; nothing chosen</td></tr>
+    <tr><td class="num">1</td><td class="num">00001</td><td>{0} &nbsp; item 0 only</td></tr>
+    <tr><td class="num">5</td><td class="num">00101</td><td>{0, 2}</td></tr>
+    <tr><td class="num">31</td><td class="num">11111</td><td>{0, 1, 2, 3, 4} &nbsp; everything</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Read bits right to left, bit <span class="mono">i</span> meaning “is item <span class="mono">i</span> in?”. The integers <span class="mono">0</span> through <span class="mono">2<sup>n</sup>−1</span> are then <em>exactly</em> the subsets, each one once. Which gives you the loop:</p>
+
+<div class="keystone">
+  <span class="big">for mask in range(1 &lt;&lt; n):</span>
+  <span class="cap">Counting from 0 to 2<sup>n</sup>−1 enumerates every subset, in order, with no bookkeeping.</span>
+</div>
+
+<p><span class="mono">1 &lt;&lt; n</span> is <span class="mono">2<sup>n</sup></span>. That is the whole trick, and it is why bitmask code is short.</p>
+
+<h2>The operators</h2>
+
+<p>Six of them, and you need all six.<sup>2</sup></p>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th class="num">Op</th><th>Does</th><th class="num">Example</th><th>Use it for</th></tr></thead>
+  <tbody>
+    <tr><td class="num">a &amp; b</td><td>AND: 1 where both are 1</td><td class="num">0101 &amp; 0011 = 0001</td><td>Testing a bit; intersection</td></tr>
+    <tr><td class="num">a | b</td><td>OR: 1 where either is 1</td><td class="num">0101 | 0011 = 0111</td><td>Setting a bit; union</td></tr>
+    <tr><td class="num">a ^ b</td><td>XOR: 1 where they differ</td><td class="num">0101 ^ 0011 = 0110</td><td>Flipping a bit; pairing off</td></tr>
+    <tr><td class="num">a &lt;&lt; k</td><td>Shift left, <em>“multiplication by <code>pow(2, k)</code>”</em></td><td class="num">1 &lt;&lt; 3 = 1000</td><td>Building bit <span class="mono">k</span></td></tr>
+    <tr><td class="num">a &gt;&gt; k</td><td>Shift right, <em>“floor division by <code>pow(2, k)</code>”</em></td><td class="num">1100 &gt;&gt; 2 = 0011</td><td>Moving bit <span class="mono">k</span> to the end</td></tr>
+    <tr><td class="num">~a</td><td>Invert every bit</td><td class="num">~5 = −6</td><td><strong>Careful.</strong> See below.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The three idioms you will type a hundred times, for item <span class="mono">i</span>:</p>
+
+<pre><code>mask |  (1 &lt;&lt; i)      <span class="cmt"># add item i to the set</span>
+mask &amp;  ~(1 &lt;&lt; i)     <span class="cmt"># remove item i from the set</span>
+mask &gt;&gt; i &amp; 1         <span class="cmt"># is item i in the set?  → 0 or 1</span></code></pre>
+
+<p>That last line needs no brackets: <span class="mono">&gt;&gt;</span> binds tighter than <span class="mono">&amp;</span>, so it reads as <code>(mask &gt;&gt; i) &amp; 1</code>. And unlike in C, a following <code>== 1</code> is also safe in Python, because <span class="mono">&amp;</span> binds tighter than <span class="mono">==</span>.<sup>2</sup></p>
+
+<h3>Set operations, and the one that does not survive Python</h3>
+
+<p>CPH gives the translation table between set notation and bit operations:<sup>1</sup></p>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Set operation</th><th class="num">Bit syntax</th><th>Works in Python?</th></tr></thead>
+  <tbody>
+    <tr><td>intersection</td><td class="num">a &amp; b</td><td>Yes</td></tr>
+    <tr><td>union</td><td class="num">a | b</td><td>Yes</td></tr>
+    <tr><td>difference</td><td class="num">a &amp; ~b</td><td>Yes</td></tr>
+    <tr><td>complement</td><td class="num">~a</td><td><strong>No. Use <span class="mono">full ^ a</span>.</strong></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p class="note">
+<strong>The one place the C++ advice breaks.</strong> That table assumes a fixed-width integer, where inverting 32 bits gives you the complement. Python's <em>“integers have unlimited precision”</em>,<sup>2</sup> so there is no width to invert within: <code>~0b0101</code> is <span class="mono">−6</span>, not <span class="mono">0b1010</span>. To complement within <span class="mono">n</span> bits, XOR against an all-ones mask:
+<pre><code>full = (1 &lt;&lt; n) - 1     <span class="cmt"># n ones: for n=4, 0b1111</span>
+complement = full ^ a   <span class="cmt"># for a=0b0101 → 0b1010 ✓</span></code></pre>
+Note <code>a &amp; ~b</code> for difference <em>is</em> still fine, because the AND masks the runaway sign bits away.
+</p>
+
+<h2>Counting the loop: where the dot-n comes from</h2>
+
+<p>Here is subset enumeration in full:</p>
+
+<pre><code>for mask in range(1 &lt;&lt; n):              <span class="cmt"># 2^n masks</span>
+    chosen = [a[i] for i in range(n)    <span class="cmt">#   × n bits to test</span>
+              if mask &gt;&gt; i &amp; 1]
+    ...</code></pre>
+
+<p>Now apply the counting rule from <a href="0002-counting-loops.html">lesson 0002</a>: nesting multiplies. The outer loop runs <span class="mono">2<sup>n</sup></span> times, the inner comprehension runs <span class="mono">n</span> times per mask, and neither has a counter that survives across iterations (so <a href="0004-two-pointers.html">lesson 0004</a>'s amortised escape does not apply here). They multiply.</p>
+
+<div class="keystone">
+  <span class="big">2<sup>n</sup> masks × n bits each = O(2<sup>n</sup>·n)</span>
+  <span class="cap">The budget table said so all along. Now you can derive it.</span>
+</div>
+
+<p>At <span class="mono">n = 20</span> that is <span class="mono">10<sup>6</sup> × 20 = 2·10<sup>7</sup></span>. Against a C++ budget, fine. Against Python's ~<span class="mono">10<sup>7</sup></span>/second, it is <em>right at the edge</em>, which is the honest reason this lesson exists: at these sizes the <span class="mono">·n</span> is not a rounding error, it is the difference between passing and not.</p>
+
+<h3>Popcount: dropping the inner loop when you only need the size</h3>
+
+<p>If all you want is <em>how many</em> items are in the subset, you do not need the inner loop at all:<sup>2</sup></p>
+
+<pre><code>mask.bit_count()        <span class="cmt"># Python 3.10+, runs in C</span>
+bin(mask).count("1")    <span class="cmt"># works everywhere; use if the judge is older</span></code></pre>
+
+<p><em>“Return the number of ones in the binary representation of the absolute value of the integer. This is also known as the population count.”</em><sup>2</sup> Check your judge's Python version before relying on <code>bit_count</code>; it arrived in 3.10 and some judges lag.</p>
+
+<h2>The payoff: Apple Division, rewritten</h2>
+
+<p><a href="0005-complete-search.html">Lesson 0005</a> solved <a href="https://cses.fi/problemset/task/1623">CSES 1623</a> with nested <code>combinations</code> calls. Here it is as a bitmask:</p>
+
+<pre><code>n = int(input())
+a = list(map(int, input().split()))
+total = sum(a)
+
+best = total
+for mask in range(1 &lt;&lt; n):
+    first = sum(a[i] for i in range(n) if mask &gt;&gt; i &amp; 1)
+    best = min(best, abs(total - 2 * first))
+print(best)</code></pre>
+
+<p>Shorter, one loop instead of two, and no <code>itertools</code> import. Both versions are <span class="mono">O(2<sup>n</sup>·n)</span> and both are correct; the bitmask version is the one you can write from memory at minute 40 of a contest.</p>
+
+<p class="note">
+<strong>Two honest notes.</strong> First, this enumerates each split twice (mask and its complement give the same partition), so you can halve the work by looping to <code>1 &lt;&lt; (n - 1)</code>. A factor of two never changes a complexity class, but at the edge of the Python budget it is free and worth taking. Second, <code>itertools</code> generates in C while a bitmask loop is interpreted Python, so for the <em>same</em> algorithm <code>combinations</code> can actually be quicker despite the uglier code. Lesson 0004's warning applies again: the asymptotically identical solution is not always the faster submission.
+</p>
+
+<h2>Two bit tricks worth knowing</h2>
+
+<p>Not for their own sake. These two show up constantly:</p>
+
+<pre><code>x &amp; (x - 1)     <span class="cmt"># clear the lowest set bit:  0b101100 → 0b101000</span>
+x &amp; -x          <span class="cmt"># isolate the lowest set bit: 0b101100 → 0b000100</span></code></pre>
+
+<p>The first gives you a loop that runs once per <em>set</em> bit rather than once per bit position, which turns an <span class="mono">n</span> into a popcount. The second is the engine inside a Fenwick tree, which is well beyond this mission but you will meet the idiom again.</p>
+
+<p>One property worth filing away, from USACO Guide: <em>“xor is its own inverse, i.e. x⊕x = 0”</em>.<sup>3</sup> That single fact is the entire solution to a surprising number of problems where everything appears twice except one thing.</p>
+
+<h2>Check yourself</h2>
+
+<p>Six lessons in the mix now. The counting questions matter more than the syntax ones.</p>
+
+<div class="quiz" data-quiz='[
+  {
+    "q": "What does <code>for mask in range(1 &lt;&lt; n)</code> iterate over?",
+    "opts": [
+      "Every subset of the n items, once",
+      "Every ordering of the n items once",
+      "Every pair drawn from the n items",
+      "Every single one of the n items once"
+    ],
+    "a": 0,
+    "why": "<code>1 &lt;&lt; n</code> is 2<sup>n</sup>, and the integers 0 to 2<sup>n</sup>−1 are exactly the subsets: bit i of the integer says whether item i is in. Orderings would be n! and need <code>permutations</code>."
+  },
+  {
+    "q": "Why is subset enumeration O(2<sup>n</sup>·n) rather than just O(2<sup>n</sup>)?",
+    "opts": [
+      "Each mask needs n bits inspected",
+      "Each mask must be sorted before use",
+      "The shift itself costs n operations",
+      "Python integers make each op slower"
+    ],
+    "a": 0,
+    "why": "Two nested loops: 2<sup>n</sup> masks on the outside, n bit tests on the inside, and neither carries a counter across iterations, so lesson 0002 applies and they multiply. Use <code>bit_count()</code> when you only need the size, and the inner loop disappears."
+  },
+  {
+    "q": "In Python, what is <code>~0b0101</code>?",
+    "opts": [
+      "Minus six, not the four-bit flip",
+      "Ten, which is the four-bit flip",
+      "Five, because it is its own flip",
+      "Zero, since all the bits cancel"
+    ],
+    "a": 0,
+    "why": "Python integers have unlimited precision, so there is no fixed width to invert inside: <code>~x</code> is <code>-x-1</code>. To complement within n bits use <code>full ^ x</code> where <code>full = (1 &lt;&lt; n) - 1</code>. This is the one line of C++ bitmask advice that does not port."
+  },
+  {
+    "q": "Which expression tests whether item <code>i</code> is in <code>mask</code>?",
+    "opts": [
+      "<code>mask &gt;&gt; i &amp; 1</code>",
+      "<code>mask &amp; i &gt;&gt; 1</code>",
+      "<code>mask ^ i &amp; 1</code>",
+      "<code>mask &lt;&lt; i | 1</code>"
+    ],
+    "a": 0,
+    "why": "Shift bit i down to position zero, then mask off everything else. <code>&gt;&gt;</code> binds tighter than <code>&amp;</code>, so no brackets are needed. Equivalently <code>mask &amp; (1 &lt;&lt; i)</code>, which is nonzero rather than exactly one."
+  },
+  {
+    "q": "A problem has <code>n ≤ 20</code> and your bitmask loop body does about 20 operations. Is it safe in Python?",
+    "opts": [
+      "It is borderline; count before trusting",
+      "It is safe with very large margins",
+      "It is hopeless and will always TLE",
+      "It is fine because C runs the loop"
+    ],
+    "a": 0,
+    "why": "2<sup>20</sup> × 20 = 2·10<sup>7</sup> interpreted operations against a Python budget nearer 10<sup>7</sup>/second. Exactly the “borderline means fails” case from lesson 0001. Shrink the body, use <code>bit_count()</code>, or halve the loop by symmetry."
+  },
+  {
+    "q": "From lesson 0005: where does an O(2<sup>n</sup>) solution stop fitting the budget?",
+    "opts": [
+      "At about n equals twenty five",
+      "At about n equals one hundred",
+      "At about n equals thirteen only",
+      "At about n equals two thousand"
+    ],
+    "a": 0,
+    "why": "2<sup>25</sup> is 3.4·10<sup>7</sup> and already borderline; 2<sup>30</sup> is 10<sup>9</sup> and dead. Do not confuse this with the n! cliff at 13. Two different cliffs, and knowing which one you are near decides the technique."
+  },
+  {
+    "q": "You need the size of a subset inside a 2<sup>n</sup> loop. What is the cheapest way?",
+    "opts": [
+      "Call <code>mask.bit_count()</code> on it",
+      "Loop over all n bits and total",
+      "Build the list then call <code>len</code>",
+      "Convert to a set and measure it"
+    ],
+    "a": 0,
+    "why": "<code>bit_count()</code> runs in C and removes the factor of n entirely, taking the loop from O(2<sup>n</sup>·n) to O(2<sup>n</sup>). It landed in Python 3.10; on an older judge use <code>bin(mask).count(\"1\")</code>, which is also C-speed."
+  }
+]'></div>
+
+<h2>Your turn</h2>
+
+<ol>
+  <li><a href="https://cses.fi/problemset/task/1623">CSES 1623 &mdash; Apple Division</a>, using the bitmask version above. If you already solved it with <code>combinations</code>, submit both and compare the runtimes. That comparison is the lesson.</li>
+  <li><a href="https://cses.fi/problemset/task/1617">CSES 1617 &mdash; Bit Strings</a>. One line, but write down <em>why</em> the answer is 2<sup>n</sup> before you write it, and note the modulo.</li>
+  <li><a href="https://cses.fi/problemset/task/2205">CSES 2205 &mdash; Gray Code</a>. Harder. The construction is <code>i ^ (i &gt;&gt; 1)</code>; try to convince yourself why consecutive outputs differ in exactly one bit, and bring me your reasoning.</li>
+</ol>
+
+<div class="footer">
+  <h3>Notes</h3>
+  <p><span class="mono">1.</span> <a href="https://cses.fi/book/book.pdf">Competitive Programmer's Handbook</a>, ch. 10 “Bit manipulation”, p. 95; “Representing sets” is §10.3, p. 98. The set-operation table is reproduced from that section.</p>
+  <p><span class="mono">2.</span> <a href="https://docs.python.org/3/library/stdtypes.html#bitwise-operations-on-integer-types">Python documentation &mdash; bitwise operations on integers</a> and <a href="https://docs.python.org/3/library/stdtypes.html#int.bit_count"><code>int.bit_count()</code></a>. The shift descriptions, the unlimited-precision statement and the popcount definition are quoted verbatim. Operator precedence is documented in the <a href="https://docs.python.org/3/reference/expressions.html#operator-precedence">expressions reference</a>.</p>
+  <p><span class="mono">3.</span> <a href="https://usaco.guide/silver/intro-bitwise">USACO Guide &mdash; Intro to Bitwise Operators (Silver)</a>.</p>
+
+  <h3>Read this next</h3>
+  <p><strong>Primary source:</strong> <a href="https://cses.fi/book/book.pdf">Competitive Programmer's Handbook</a>, ch. 10, §10.1 to §10.3. Six pages. It is C++, so read it with this lesson's Python correction on <code>~</code> in hand; everything else ports directly.</p>
+
+  <h3>Related in this workspace</h3>
+  <ul>
+    <li>Previous: <a href="0005-complete-search.html">Lesson 0005 &mdash; Complete search</a></li>
+    <li>Reference: <a href="../reference/bitwise-cheatsheet.html">Bitwise &amp; Bitmask Cheat Sheet</a> &mdash; print this one</li>
+    <li>Reference: <a href="../reference/technique-by-budget.html">Technique by Budget</a></li>
+    <li>Reference: <a href="../reference/complexity-budget.html">The Complexity Budget Table</a></li>
+    <li>Mission: <a href="../MISSION.md">why we are doing this</a></li>
+  </ul>
+
+  <div class="ask">
+    <strong>Stuck on anything here?</strong> Ask me. “Why is <code>x &amp; -x</code> the lowest set bit?” is a genuinely good question with a two-line answer involving two's complement, and “how do I loop over the subsets of a subset?” is the natural next one if you meet a bitmask DP problem.
+  </div>
+</div>
+
+<script src="../assets/quiz.js"></script>
+</body>
+</html>
