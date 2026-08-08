@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reference · Technique by Budget</title>
+<link rel="stylesheet" href="../assets/lesson.css">
+</head>
+<body>
+
+<p class="eyebrow"><a href="../index.html">Course</a> · Reference</p>
+<h1>Technique by Budget</h1>
+<p class="subtitle">The <a href="complexity-budget.html">budget table</a> tells you what you can afford. This one tells you what to write. Templates in Python, copy-ready.</p>
+
+<h2>The lookup</h2>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th class="num">Budget</th><th>Technique</th><th>Signature in the problem</th></tr></thead>
+  <tbody>
+    <tr><td class="num">O(log n)</td><td>Binary search alone</td><td><span class="mono">n</span> up to 10<sup>9</sup>–10<sup>18</sup>. <span class="mono">n</span> is a number to compute with, not a list.</td></tr>
+    <tr><td class="num">O(n)</td><td>Two pointers / sliding window</td><td>“Contiguous”, “subarray”, “window”, “pair” on sorted data.</td></tr>
+    <tr><td class="num">O(n log n)</td><td>Sort, then binary search or two pointers</td><td><span class="mono">n ≤ 2·10<sup>5</sup></span>, the most common constraint in the sport.</td></tr>
+    <tr><td class="num">O(n log C)</td><td>Binary search on the answer</td><td>“Minimum time / maximum size such that…”, and checking is easy.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p><span class="mono">C</span> is the size of the <em>answer range</em>, not the input. It is usually 10<sup>9</sup> or 10<sup>18</sup>, so <span class="mono">log C</span> is 30 or 60.</p>
+
+<h2>Binary search — the one template</h2>
+
+<p>Answers: <strong>what is the smallest <span class="mono">x</span> in <span class="mono">[lo, hi]</span> for which <code>check(x)</code> is true?</strong> Learn this shape only; bend the problem to fit it.</p>
+
+<pre><code>lo, hi = LOW, HIGH         <span class="cmt"># hi must be a value you KNOW passes</span>
+while lo &lt; hi:
+    mid = (lo + hi) // 2   <span class="cmt"># floors → mid &lt; hi → always makes progress</span>
+    if check(mid):
+        hi = mid           <span class="cmt"># mid works, but keep it as a candidate</span>
+    else:
+        lo = mid + 1       <span class="cmt"># mid fails, and so does everything below</span>
+answer = lo</code></pre>
+
+<p>For the <em>largest</em> <span class="mono">x</span> where <code>check(x)</code> is true, do not invent a second template — search for the smallest <span class="mono">x</span> where <code>check(x)</code> is <strong>false</strong>, and subtract one.</p>
+
+<h3>Preconditions — check these or it silently returns nonsense</h3>
+
+<ol>
+  <li><strong>Monotonic.</strong> Once <code>check</code> flips false→true it must stay true. <em>“Binary search on the answer only works if the answer function is monotonic.”</em><sup>1</sup></li>
+  <li><strong><span class="mono">hi</span> is known-good.</strong> The template never tests <span class="mono">hi</span> itself. If no answer exists in range, it returns <span class="mono">hi</span> and lies to you.</li>
+  <li><strong>Sorted</strong>, if you are searching an array rather than an answer range.</li>
+</ol>
+
+<h3>Debugging a binary search</h3>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Symptom</th><th>Cause</th></tr></thead>
+  <tbody>
+    <tr><td>Hangs / TLE with tiny input</td><td>You wrote <code>lo = mid</code>. It must be <code>mid + 1</code>.</td></tr>
+    <tr><td>Answer off by exactly one</td><td>You wrote <code>hi = mid - 1</code> and discarded the answer.</td></tr>
+    <tr><td>Right on samples, wrong on tests</td><td><span class="mono">hi</span> was too small, or <code>check</code> is not monotonic.</td></tr>
+    <tr><td>Correct but too slow in Python</td><td><span class="mono">hi</span> is a lazy 10<sup>18</sup>. Bound it properly.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2><code>bisect</code> — use it whenever the array is the thing being searched</h2>
+
+<p>Runs in C, so it dodges the Python tax. Sort first.<sup>2</sup></p>
+
+<pre><code>from bisect import bisect_left, bisect_right
+
+i = bisect_left(a, x)      <span class="cmt"># first index with a[i] &gt;= x</span>
+j = bisect_right(a, x)     <span class="cmt"># first index with a[j] &gt;  x</span>
+
+x in a          → i &lt; len(a) and a[i] == x
+count of x      → j - i
+values &lt; x      → i
+values &lt;= x     → j
+predecessor     → a[i-1] if i &gt; 0 else None      <span class="cmt"># largest value &lt; x</span>
+successor       → a[j]   if j &lt; len(a) else None <span class="cmt"># smallest value &gt; x</span></code></pre>
+
+<p class="note">
+<strong>Never <code>insort</code> in a loop.</strong> <em>“The insort() functions are O(n) because the logarithmic search step is dominated by the linear time insertion step.”</em><sup>2</sup> <span class="mono">n</span> calls to <code>insort</code> is O(n²). If you need a sorted structure with fast inserts, you need a different structure — or a way to sort once up front.
+</p>
+
+<h2>Two pointers — the two shapes</h2>
+
+<h3>Opposite ends (array must be sorted)</h3>
+
+<pre><code>lo, hi = 0, n - 1
+while lo &lt; hi:
+    s = a[lo] + a[hi]
+    if s == target:
+        break
+    elif s &lt; target:
+        lo += 1            <span class="cmt"># need bigger; a[lo] is eliminated forever</span>
+    else:
+        hi -= 1            <span class="cmt"># need smaller</span></code></pre>
+
+<p>O(n) after an O(n log n) sort. Use for: pairs summing to a target, closest pair, counting pairs under a limit, matching largest with smallest.</p>
+
+<h3>Sliding window (same direction)</h3>
+
+<pre><code>left = 0
+cur  = 0
+for right in range(n):
+    cur += a[right]        <span class="cmt"># grow right</span>
+    while BAD(cur):
+        cur -= a[left]     <span class="cmt"># shrink left until valid again</span>
+        left += 1
+    <span class="cmt"># window a[left..right] is now valid — record it</span></code></pre>
+
+<p>O(n) total. Use for: contiguous subarrays, longest run satisfying a property, smallest window covering something.</p>
+
+<p class="note">
+<strong>Requires that shrinking helps.</strong> Removing <code>a[left]</code> must move <code>cur</code> back towards valid. With all-positive values, sums do this. With <strong>negative values a sum window breaks</strong> — reach for prefix sums plus a dictionary instead.
+</p>
+
+<h2>Counting a two-pointer loop</h2>
+
+<p>A <code>while</code> inside a <code>for</code> is <em>not</em> automatically O(n²). Ask the right question:</p>
+
+<div class="keystone">
+  <span class="big">How many times in total, across the whole run?</span>
+  <span class="cap">Not “how many per outer iteration?” — that question has no answer here.</span>
+</div>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Inner loop's counter…</th><th>Loops</th><th>Result</th></tr></thead>
+  <tbody>
+    <tr><td>never resets, only moves forward</td><td class="num">add</td><td>O(n + n) = <strong>O(n)</strong></td></tr>
+    <tr><td>resets at the top of each outer pass</td><td class="num">multiply</td><td><strong>O(n²)</strong></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>This is amortised analysis.<sup>3</sup> The code for the two cases looks nearly identical — one line's difference between passing and TLE.</p>
+
+<h2>The Python tax on these two</h2>
+
+<ul>
+  <li><strong><code>bisect</code>, <code>sorted()</code>:</strong> run in C. Effectively free. Always prefer them.</li>
+  <li><strong>Hand-written binary search:</strong> only ~20–60 interpreted iterations. Free too — unless the <code>check</code> inside it is an O(n) Python loop, in which case price it as <span class="mono">n × log C</span> interpreted operations and compare against ~10<sup>7</sup>/second.</li>
+  <li><strong>Two pointers:</strong> a pure Python loop, ~<span class="mono">2n</span> interpreted steps, no C escape hatch. Fine at <span class="mono">2·10<sup>5</sup></span>; think twice at <span class="mono">10<sup>7</sup></span>.</li>
+  <li><strong>Counter-intuitive consequence:</strong> an O(n log n) solution that lives inside <code>sorted()</code> can beat a hand-rolled O(n) loop on the clock. Complexity decides who survives a bigger <span class="mono">n</span>; it does not always decide today's submission.</li>
+</ul>
+
+<h2>Before you submit</h2>
+
+<ol>
+  <li>Binary search: is <code>check</code> monotonic, and is <span class="mono">hi</span> genuinely known-good?</li>
+  <li>Binary search: does <code>lo</code> advance by <code>mid + 1</code>?</li>
+  <li>Two pointers: is the array sorted, if the shape needs it?</li>
+  <li>Sliding window: are all values positive, or have you handled the case where they are not?</li>
+  <li>Both: substitute the largest <span class="mono">n</span> and count. (<a href="complexity-budget.html">budget table</a>)</li>
+</ol>
+
+<div class="footer">
+  <h3>Sources</h3>
+  <p><span class="mono">1.</span> <a href="https://usaco.guide/silver/binary-search">USACO Guide — Binary Search (Silver)</a>.</p>
+  <p><span class="mono">2.</span> <a href="https://docs.python.org/3/library/bisect.html">Python documentation — <code>bisect</code></a>, Performance Notes.</p>
+  <p><span class="mono">3.</span> <a href="https://cses.fi/book/book.pdf">Competitive Programmer's Handbook</a>, ch. 8 §8.1; also <a href="https://usaco.guide/silver/two-pointers">USACO Guide — Two Pointers</a>.</p>
+
+  <h3>Related</h3>
+  <ul>
+    <li>Reference: <a href="complexity-budget.html">The Complexity Budget Table</a> — read that one first</li>
+    <li>Lesson: <a href="../lessons/0003-where-log-n-comes-from.html">0003 — Where <em>log n</em> comes from</a></li>
+    <li>Lesson: <a href="../lessons/0004-two-pointers.html">0004 — Two pointers</a></li>
+  </ul>
+  <p class="noprint"><em>Print this and the budget table together. Two pages, one contest.</em></p>
+</div>
+
+</body>
+</html>

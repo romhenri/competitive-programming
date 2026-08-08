@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Competitive Programming · Course Hub</title>
+<link rel="stylesheet" href="assets/lesson.css">
+<style>
+  /* Hub-only: the lesson index rows. */
+  .index { list-style: none; padding: 0; margin: 1.4rem 0 0; }
+  .index li { border-bottom: 1px solid var(--rule); }
+  .index a.row {
+    display: grid;
+    grid-template-columns: 3.2rem 1fr;
+    gap: 0 1rem;
+    padding: .9rem 0;
+    text-decoration: none;
+    color: inherit;
+  }
+  .index a.row:hover { background: var(--code-bg); }
+  .index .n {
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: .78rem;
+    color: var(--muted);
+    padding-top: .2rem;
+  }
+  .index .t { font-size: 1.05rem; color: var(--accent); }
+  .index .d { font-size: .88rem; color: var(--muted); margin-top: .15rem; }
+  .index li.todo a.row { pointer-events: none; }
+  .index li.todo .t { color: var(--muted); font-style: italic; }
+  .index li.todo .n::after { content: " ·"; }
+  .tag {
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: .62rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    border: 1px solid var(--rule);
+    padding: .1rem .35rem;
+    border-radius: 2px;
+    color: var(--muted);
+    margin-left: .5rem;
+    vertical-align: .12em;
+  }
+</style>
+</head>
+<body>
+
+<p class="eyebrow">Course Hub</p>
+<h1>Competitive Programming</h1>
+<p class="subtitle">Codeforces, AtCoder and CSES — in Python. Solving the problem is the easy half; solving it inside the time limit is the sport.</p>
+
+<p>The <a href="MISSION.md">mission</a>: predict TLE <em>before</em> submitting, not after — and know which technique reaches the budget once you've read it.</p>
+
+<h2>Track 1 — Time &amp; Space Complexity</h2>
+
+<p>Every other topic in this sport is priced in complexity, so it goes first. Start at 0001 and work down.</p>
+
+<ul class="index">
+  <li>
+    <a class="row" href="lessons/0001-from-n-to-your-time-budget.html">
+      <span class="n">0001</span>
+      <span>
+        <span class="t">From <em>n</em> to your time budget</span>
+        <span class="d">The 10<sup>8</sup>-operations rule, substituting <em>n</em> into a complexity, and what <code>n ≤ 200000</code> is really telling you.</span>
+      </span>
+    </a>
+  </li>
+  <li>
+    <a class="row" href="lessons/0002-counting-loops.html">
+      <span class="n">0002</span>
+      <span>
+        <span class="t">Counting loops</span>
+        <span class="d">Nesting multiplies, sequential takes the max — plus the hidden loops inside Python one-liners like <code>x in list</code>.</span>
+      </span>
+    </a>
+  </li>
+  <li>
+    <a class="row" href="lessons/0003-where-log-n-comes-from.html">
+      <span class="n">0003</span>
+      <span>
+        <span class="t">Where <em>log n</em> comes from</span>
+        <span class="d">Halving, binary search, and the template that cannot loop forever — plus binary searching the <em>answer</em>, the move that wins contests.</span>
+      </span>
+    </a>
+  </li>
+  <li>
+    <a class="row" href="lessons/0004-two-pointers.html">
+      <span class="n">0004</span>
+      <span>
+        <span class="t">Two pointers</span>
+        <span class="d">The O(n²) → O(n) collapse, both pointer shapes, and how to spot the nested loop that is secretly linear.</span>
+      </span>
+    </a>
+  </li>
+  <li class="todo">
+    <a class="row" href="#">
+      <span class="n">0005</span>
+      <span>
+        <span class="t">Prefix sums<span class="tag">next</span></span>
+        <span class="d">The other O(n) technique — and the fallback when a sliding window meets negative numbers.</span>
+      </span>
+    </a>
+  </li>
+</ul>
+
+<h2>Reference</h2>
+
+<p>Compressed, printable, meant to be revisited — unlike lessons.</p>
+
+<ul class="index">
+  <li>
+    <a class="row" href="reference/complexity-budget.html">
+      <span class="n">↳</span>
+      <span>
+        <span class="t">The Complexity Budget Table</span>
+        <span class="d">Constraint → allowed complexity, the two landmarks worth memorising, and the Python tax. Print this one.</span>
+      </span>
+    </a>
+  </li>
+  <li>
+    <a class="row" href="reference/technique-by-budget.html">
+      <span class="n">↳</span>
+      <span>
+        <span class="t">Technique by Budget</span>
+        <span class="d">Budget → what to actually write. Binary search and two-pointer templates, the <code>bisect</code> cheat sheet, and a binary-search debugging table.</span>
+      </span>
+    </a>
+  </li>
+</ul>
+
+<div class="footer">
+  <h3>Workspace</h3>
+  <ul>
+    <li><a href="MISSION.md">MISSION.md</a> — why we're doing this</li>
+    <li><a href="RESOURCES.md">RESOURCES.md</a> — trusted sources and communities</li>
+  </ul>
+
+  <h3>Primary source</h3>
+  <p><a href="https://usaco.guide/bronze/time-comp">USACO Guide — Time Complexity (Bronze)</a>. Free, maintained by USACO finalists, and the source of the budget table.</p>
+</div>
+
+</body>
+</html>

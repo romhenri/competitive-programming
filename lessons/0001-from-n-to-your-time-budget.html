@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0001 · From n to your time budget</title>
+<link rel="stylesheet" href="../assets/lesson.css">
+<link rel="stylesheet" href="../assets/quiz.css">
+</head>
+<body>
+
+<p class="eyebrow"><a href="../index.html">Course</a> · Lesson 0001</p>
+<h1>From <em>n</em> to your time budget</h1>
+<p class="subtitle">The constraints at the top of a problem are a message from the setter telling you which algorithm they had in mind. This lesson teaches you to read it.</p>
+
+<h2>The situation</h2>
+
+<p>You open a Codeforces problem. Somewhere near the bottom of the statement, in small type:</p>
+
+<pre><code>1 ≤ n ≤ 200000</code></pre>
+
+<p>Most beginners skim past this. It is the single most informative line in the problem. It is the setter quietly telling you <em>“the solution I want runs in about n log n; do not bother submitting a double loop.”</em></p>
+
+<p>Learning to hear that takes exactly two facts.</p>
+
+<h2>Fact one — the machine's budget</h2>
+
+<p>A judge server runs on the order of <strong>10<sup>8</sup> simple operations per second</strong>. Time limits are typically 1–2 seconds. So your whole solution gets a budget of roughly a hundred million operations.<sup>1</sup></p>
+
+<div class="keystone">
+  <span class="big">10<sup>8</sup> operations ≈ 1 second</span>
+  <span class="cap">Everything in competitive programming hangs off this number.</span>
+</div>
+
+<p>That is not a lot and it is not a little. It is enough to touch two hundred thousand items five hundred times each. It is nowhere near enough to compare every pair of a million items.</p>
+
+<h2>Fact two — complexity is a recipe for counting</h2>
+
+<p>“Time complexity” sounds abstract. Operationally it is not. It is a formula with <span class="mono">n</span> in it, and you use it by <strong>substituting the largest <span class="mono">n</span> the problem allows and reading off a number</strong>.</p>
+
+<p>Take a concrete problem: <em>given a list of numbers, does any pair sum to zero?</em> Here is the obvious solution:</p>
+
+<pre><code><span class="cmt"># Check every pair.</span>
+for i in range(n):
+    for j in range(i + 1, n):
+        if a[i] + a[j] == 0:
+            print("YES"); return</code></pre>
+
+<p>The inner line runs once per pair. There are about <span class="mono">n²/2</span> pairs. We call this <strong>O(n²)</strong> — read aloud as “order n squared”. The notation deliberately throws away the <span class="mono">/2</span> and any constant: at the scale we care about, only the <em>shape</em> of the growth matters.<sup>2</sup></p>
+
+<p>Now substitute. That is the whole skill:</p>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th class="num">If n is…</th><th class="num">n² is…</th><th>Verdict at 10<sup>8</sup>/sec</th></tr></thead>
+  <tbody>
+    <tr><td class="num">1,000</td><td class="num">10<sup>6</sup></td><td>Instant. 1% of budget.</td></tr>
+    <tr><td class="num">10,000</td><td class="num">10<sup>8</sup></td><td>Right at the edge. Nervous.</td></tr>
+    <tr><td class="num">200,000</td><td class="num">4·10<sup>10</sup></td><td><strong>400× over budget. TLE.</strong></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Same code, same correctness. The constraint alone decides whether it is a solution or a wasted submission. And notice what changed between rows: <span class="mono">n</span> grew 200×, but the work grew 40,000×. That is what squaring does, and it is why <span class="mono">n ≤ 200000</span> is a hard no to double loops.</p>
+
+<p>The fix, for the record, is one line and it is <strong>O(n)</strong>:</p>
+
+<pre><code>seen = set()
+for x in a:
+    if -x in seen:          <span class="cmt"># set lookup: O(1), not O(n)</span>
+        print("YES"); return
+    seen.add(x)</code></pre>
+
+<p><span class="mono">2·10<sup>5</sup></span> operations instead of <span class="mono">4·10<sup>10</sup></span>. Same answer, 200,000× less work.</p>
+
+<h2>Putting it together</h2>
+
+<p>You now have the loop that every competitive programmer runs before writing code:</p>
+
+<ol>
+  <li><strong>Read the largest <span class="mono">n</span></strong> from the constraints.</li>
+  <li><strong>Ask what complexity fits</strong> inside 10<sup>8</sup> for that <span class="mono">n</span>.</li>
+  <li><strong>Only then</strong> pick an algorithm.</li>
+</ol>
+
+<p>Step 2 is a lookup, and you should not derive it under contest pressure — that is what the <a href="../reference/complexity-budget.html">Complexity Budget Table</a> is for. Print it. But two rows are worth burning into memory right now, because they cover most of what you will meet:</p>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th class="num">Constraint</th><th>Intended solution</th></tr></thead>
+  <tbody>
+    <tr><td class="num">n ≤ 1000</td><td>O(n²) — a double loop is expected. Stop looking for something clever.</td></tr>
+    <tr><td class="num">n ≤ 2·10<sup>5</sup></td><td>O(n log n) — sort it, or use a set/heap. A double loop will TLE.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p class="note">
+<strong>You write Python, so add a tax.</strong> The 10<sup>8</sup> figure assumes C++. A Python <em>loop</em> manages closer to 10<sup>7</sup> operations per second. But work you push into a built-in — <code>sorted()</code>, <code>sum()</code>, <code>in</code> on a set — runs in C at nearly full speed. Rule of thumb: <em>when the table says “borderline”, in Python read “fails”.</em> More in the <a href="../reference/complexity-budget.html#the-python-tax">reference sheet</a>.
+</p>
+
+<h2>Check yourself</h2>
+
+<p>No looking back up the page. Getting one wrong here is more useful than getting it right by peeking — the effort of retrieval is what makes it stick.</p>
+
+<div class="quiz" data-quiz='[
+  {
+    "q": "A problem says <code>1 ≤ n ≤ 200000</code>. You have written a solution with two nested loops over the array. What happens?",
+    "opts": [
+      "It TLEs; you need about O(n log n)",
+      "It passes with room to spare, easily",
+      "It passes but only just barely so",
+      "It fails on memory, not on the time"
+    ],
+    "a": 0,
+    "why": "n² = 4·10<sup>10</sup>, roughly 400× the ~10<sup>8</sup> budget — and that is before Python&rsquo;s own tax. n ≤ 2·10<sup>5</sup> is the classic signal for an O(n log n) intended solution."
+  },
+  {
+    "q": "A problem says <code>1 ≤ n ≤ 1000</code>. What is the setter most likely telling you?",
+    "opts": [
+      "A double loop is the intended solution",
+      "You must find a linear-time solution here",
+      "A binary search is needed on the answer",
+      "Only a closed-form formula will pass it"
+    ],
+    "a": 0,
+    "why": "1000² = 10<sup>6</sup>, one percent of the budget. A small n is a deliberate gift: the setter is telling you not to bother being clever."
+  },
+  {
+    "q": "Your solution is O(n log n). The constraint is <code>n ≤ 5·10<sup>5</sup></code>. Roughly how many operations is that?",
+    "opts": [
+      "About 10<sup>7</sup> — comfortably inside budget",
+      "About 10<sup>11</sup> — far outside the budget",
+      "About 10<sup>3</sup> — far too small to matter",
+      "About 10<sup>9</sup> — slightly over the budget"
+    ],
+    "a": 0,
+    "why": "log₂(5·10<sup>5</sup>) ≈ 19, so n log n ≈ 5·10<sup>5</sup> × 19 ≈ 10<sup>7</sup>. Note how gentle the log factor is — it multiplies by ~19, where squaring would multiply by 500,000."
+  },
+  {
+    "q": "Why does O(n²) drop the ÷2, when the pair-checking loop really runs only n²/2 times?",
+    "opts": [
+      "The growth shape decides, not the constant",
+      "The division is a rounding error in code",
+      "Because Python halves the loop count too",
+      "Judges always double the time limit for it"
+    ],
+    "a": 0,
+    "why": "Big O captures how cost <em>grows</em> with n. Halving 4·10<sup>10</sup> still leaves you 200× over budget — the constant never rescues a wrong complexity class, so the notation ignores it."
+  },
+  {
+    "q": "You need to check membership repeatedly inside a loop over n items. Which line keeps the whole thing O(n) in Python?",
+    "opts": [
+      "<code>if x in seen_set:</code>",
+      "<code>if x in seen_list:</code>",
+      "<code>if seen_list.count(x):</code>",
+      "<code>if x in tuple(seen):</code>"
+    ],
+    "a": 0,
+    "why": "A set lookup is O(1); scanning a list is O(n), which turns your loop into O(n²) invisibly. This is the single most common way Python beginners TLE — the code looks identical."
+  },
+  {
+    "q": "Constraints say <code>n ≤ 10<sup>18</sup></code>. What does this almost certainly mean?",
+    "opts": [
+      "No loop over n; use maths or binary search",
+      "Use a linear pass but with fast input reading",
+      "Sort the input first and then scan it once",
+      "Store all values inside a set and look them up"
+    ],
+    "a": 0,
+    "why": "You cannot even <em>count</em> to 10<sup>18</sup>. When n is astronomically large, n is a value to compute with, not a collection to iterate — the answer is O(log n) or O(1)."
+  }
+]'></div>
+
+<h2>Your turn — do this before the next lesson</h2>
+
+<p>Open the <a href="https://cses.fi/problemset/task/1083">CSES problem “Missing Number”</a>. Do <strong>not</strong> solve it yet. Instead:</p>
+
+<ol>
+  <li>Find the constraint on <span class="mono">n</span>.</li>
+  <li>Write down, on paper, the complexity you are allowed.</li>
+  <li>Only then write the solution — and check that what you wrote matches the budget you set.</li>
+</ol>
+
+<p>Tell me what you wrote down and I'll tell you whether your reasoning was right, separately from whether your code was.</p>
+
+<div class="footer">
+  <h3>Notes</h3>
+  <p><span class="mono">1.</span> <a href="https://usaco.guide/bronze/time-comp">USACO Guide — Time Complexity</a>: <em>“a conservative estimate for the number of operations the grading server can handle per second is 10<sup>8</sup>, but it could be closer to 5·10<sup>8</sup> given good constant factors.”</em></p>
+  <p><span class="mono">2.</span> Formally: <em>if there exist positive constants n₀ and c such that f(n) ≤ c·g(n) whenever n ≥ n₀, we say f(n) = O(g(n))</em> (same source). You will not need this definition to compete — but it is what licenses throwing away the ÷2.</p>
+
+  <h3>Read this next</h3>
+  <p><strong>Primary source:</strong> <a href="https://usaco.guide/bronze/time-comp">USACO Guide — Time Complexity (Bronze)</a>. Fifteen minutes, free, and the most trustworthy treatment of exactly this topic. Read down to the end of the complexity table.</p>
+
+  <h3>Related in this workspace</h3>
+  <ul>
+    <li>Next: <a href="0002-counting-loops.html">Lesson 0002 — Counting loops</a></li>
+    <li>Then: <a href="0003-where-log-n-comes-from.html">Lesson 0003 — Where <em>log n</em> comes from</a> (it answers the “where does log n come from?” question below)</li>
+    <li>Reference: <a href="../reference/complexity-budget.html">The Complexity Budget Table</a> — print it</li>
+    <li>Reference: <a href="../reference/technique-by-budget.html">Technique by Budget</a> — the templates</li>
+    <li>Mission: <a href="../MISSION.md">why we are doing this</a></li>
+    <li>All resources: <a href="../RESOURCES.md">RESOURCES.md</a></li>
+  </ul>
+
+  <div class="ask">
+    <strong>Stuck on anything here?</strong> Ask me. I'm your teacher for this workspace — “where does log n actually come from?”, “why is a set O(1)?”, “is my solution O(n) or O(n²)?” are all fair game, and answering them is more useful than moving on with a gap.
+  </div>
+</div>
+
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

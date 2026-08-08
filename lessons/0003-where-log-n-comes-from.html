@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0003 · Where log n comes from</title>
+<link rel="stylesheet" href="../assets/lesson.css">
+<link rel="stylesheet" href="../assets/quiz.css">
+</head>
+<body>
+
+<p class="eyebrow"><a href="../index.html">Course</a> · Lesson 0003</p>
+<h1>Where <em>log n</em> comes from</h1>
+<p class="subtitle">Lesson 0001 taught you to read a budget off the constraints. This one hands you the first technique that actually hits one — and shows you why the log factor is almost free.</p>
+
+<h2>The unpaid debt from lesson 0001</h2>
+
+<p>You learned that <span class="mono">n ≤ 2·10<sup>5</sup></span> means <em>“O(n log n) is intended”</em>. You could look that up in the <a href="../reference/complexity-budget.html">budget table</a> and be right. But you had to take the <span class="mono">log n</span> on faith, and faith is not a skill.</p>
+
+<p>So: <strong>log n is what you get when you repeatedly halve something.</strong> That is the whole definition you need. <span class="mono">log₂ n</span> is the number of times you can cut <span class="mono">n</span> in half before you reach 1.</p>
+
+<p>Count it once by hand, for <span class="mono">n = 1000</span>:</p>
+
+<pre><code>1000 → 500 → 250 → 125 → 62 → 31 → 15 → 7 → 3 → 1
+<span class="cmt"># nine halvings. log₂(1000) ≈ 10.</span></code></pre>
+
+<p>Now the number that should genuinely surprise you:</p>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th class="num">n</th><th class="num">log₂ n</th><th>Halvings to get to one</th></tr></thead>
+  <tbody>
+    <tr><td class="num">1,000</td><td class="num">10</td><td>Ten.</td></tr>
+    <tr><td class="num">2·10<sup>5</sup></td><td class="num">18</td><td>Eighteen.</td></tr>
+    <tr><td class="num">10<sup>9</sup></td><td class="num">30</td><td>Thirty.</td></tr>
+    <tr><td class="num">10<sup>18</sup></td><td class="num">60</td><td>Sixty.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Read the first and last rows together. <span class="mono">n</span> grew by a factor of a <em>million million million</em>; the work grew by a factor of <strong>six</strong>.</p>
+
+<div class="keystone">
+  <span class="big">log n ≈ 20, for anything you will meet</span>
+  <span class="cap">Treat the log factor as “multiply by about twenty”. It is closer to a constant than to a cost.</span>
+</div>
+
+<p>This is why the budget table is generous with O(n log n) and brutal with O(n²). Squaring multiplies your work by <span class="mono">n</span>. A log multiplies it by 20. They are not the same species of expensive.</p>
+
+<h2>The technique: binary search</h2>
+
+<p>Halving is not something that happens to you. It is something you <em>do</em>, and the doing has a name.</p>
+
+<p>Finding a value in an array of <span class="mono">n</span> items costs O(n) — you check them all. Unless the array is sorted. As the <em>Competitive Programmer's Handbook</em> puts it: <em>“if the array is sorted, the situation is different. In this case it is possible to perform the search much faster, because the order of the elements in the array guides the search.”</em><sup>1</sup></p>
+
+<p>Look at the middle element. It is either your target, too big, or too small — and in the last two cases <strong>half the array just became irrelevant</strong>. Repeat. Eighteen steps later you have searched two hundred thousand items.</p>
+
+<p class="note">
+<strong>You will not often write this by hand in Python.</strong> The standard library has it: <code>bisect</code>. But you need to be able to write it, because the <em>second</em> use of binary search — further down this page — has no library function.
+</p>
+
+<h3>The template that cannot loop forever</h3>
+
+<p>Binary search is notorious for off-by-one bugs. Learn <em>one</em> shape and reuse it. This one answers: <strong>what is the smallest <span class="mono">x</span> for which the check is true?</strong></p>
+
+<pre><code>lo, hi = 0, n - 1          <span class="cmt"># hi must be a value known to be good</span>
+while lo &lt; hi:
+    mid = (lo + hi) // 2   <span class="cmt"># floors, so mid &lt; hi whenever lo &lt; hi</span>
+    if check(mid):
+        hi = mid           <span class="cmt"># mid works — but maybe something smaller does</span>
+    else:
+        lo = mid + 1       <span class="cmt"># mid fails — so does everything below it</span>
+answer = lo                <span class="cmt"># loop ends with lo == hi</span></code></pre>
+
+<p>It cannot hang, and the reason is worth twenty seconds of your attention: because <span class="mono">//</span> rounds down, <span class="mono">mid</span> is always strictly less than <span class="mono">hi</span>. So the <code>hi = mid</code> branch always shrinks the range, and the <code>lo = mid + 1</code> branch always shrinks it too. Every iteration makes progress. That is the whole proof.</p>
+
+<p class="note">
+<strong>A C++ warning you can ignore.</strong> Tutorials will tell you to write <code>lo + (hi - lo) // 2</code> to avoid integer overflow. Python integers do not overflow, so <code>(lo + hi) // 2</code> is safe here. One less thing to remember.
+</p>
+
+<h3>In Python, reach for <code>bisect</code> first</h3>
+
+<p>For the plain “find it in a sorted list” case, the loop above is the wrong answer — it is 18 iterations of <em>interpreted</em> Python, and lesson 0001 told you what that costs. <code>bisect</code> does the same search in C:<sup>2</sup></p>
+
+<pre><code>from bisect import bisect_left, bisect_right
+
+a.sort()                       <span class="cmt"># O(n log n), and it runs in C</span>
+i = bisect_left(a, x)          <span class="cmt"># first index where a[i] &gt;= x</span>
+found = i &lt; len(a) and a[i] == x
+
+count = bisect_right(a, x) - bisect_left(a, x)   <span class="cmt"># how many copies of x</span></code></pre>
+
+<p><code>bisect_left</code> gives you the leftmost insertion point, <code>bisect_right</code> the rightmost. Almost every sorted-array question is one of those two, or their difference.</p>
+
+<p class="note">
+<strong>One trap in that module.</strong> <code>insort()</code> looks like the natural partner and is a TLE waiting to happen. The docs are blunt: <em>“The insort() functions are O(n) because the logarithmic search step is dominated by the linear time insertion step.”</em><sup>2</sup> Calling <code>insort</code> inside a loop over <span class="mono">n</span> items is O(n²) — the exact mistake lesson 0001 warned about with <code>x in list</code>, wearing a different hat.
+</p>
+
+<h2>The real prize: binary searching the answer</h2>
+
+<p>Everything above searches an array. That is the small use. Here is the one that wins contests.</p>
+
+<p>You will meet problems where <strong>checking a candidate answer is easy, but finding the answer is not</strong>. Say a problem asks for the minimum time to finish some job. You have no idea how to compute it — but given a specific time <span class="mono">T</span>, you could easily check “is <span class="mono">T</span> enough?” in one O(n) pass.</p>
+
+<p>Then you do not need to <em>compute</em> the answer. You can <em>hunt</em> it.</p>
+
+<p>This works on one condition, and it is the only thing to remember: the check must be <strong>monotonic</strong> — once it flips from false to true, it stays true. USACO Guide states it exactly: <em>“Binary search on the answer only works if the answer function is monotonic, meaning that it is always non-decreasing or always non-increasing.”</em><sup>3</sup></p>
+
+<pre><code>false false false false TRUE TRUE TRUE TRUE
+                        ↑
+              you are hunting this edge</code></pre>
+
+<p>If more time is always at least as good as less time, the check is monotonic and you are in business. Concretely — <a href="https://cses.fi/problemset/task/1620">CSES “Factory Machines”</a>: <span class="mono">n</span> machines, machine <span class="mono">i</span> makes one product every <span class="mono">k[i]</span> seconds. What is the least time to make <span class="mono">t</span> products?</p>
+
+<pre><code>def enough(time):              <span class="cmt"># monotonic: more time never makes it worse</span>
+    made = 0
+    for k in ks:
+        made += time // k
+        if made &gt;= t:          <span class="cmt"># early exit; do not let it grow huge</span>
+            return True
+    return False
+
+lo, hi = 1, min(ks) * t        <span class="cmt"># hi: the slowest sane answer, always enough</span>
+while lo &lt; hi:
+    mid = (lo + hi) // 2
+    if enough(mid):
+        hi = mid
+    else:
+        lo = mid + 1
+print(lo)</code></pre>
+
+<p>Now put your lesson-0001 hat on and price it. The check is O(n). The search runs it <span class="mono">log(hi)</span> times. Total: <strong>O(n log(hi))</strong>.</p>
+
+<div class="keystone">
+  <span class="big">binary search = your check, × about 20 to 60</span>
+  <span class="cap">It converts “I can verify an answer” into “I can find the answer”, at almost no cost.</span>
+</div>
+
+<p class="note">
+<strong>Where the Python tax lands.</strong> Here <span class="mono">n</span> is up to <span class="mono">2·10<sup>5</sup></span> and <span class="mono">hi</span> can reach <span class="mono">10<sup>18</sup></span>, so 60 iterations × <span class="mono">2·10<sup>5</sup></span> = <span class="mono">1.2·10<sup>7</sup></span> interpreted operations. Against a Python budget nearer <span class="mono">10<sup>7</sup></span>/second, that is not comfortable — it is exactly the “borderline means fails” case. Two levers: set <span class="mono">hi</span> to a real bound like <code>min(ks) * t</code> rather than a lazy <span class="mono">10<sup>18</sup></span>, which often buys you several iterations for free; and return early from the check, as above. Count the iterations before you submit, do not hope.
+</p>
+
+<h2>Check yourself</h2>
+
+<p>Some of these reach back to lesson 0001. That is deliberate — mixing old material with new is what stops the old material quietly evaporating.</p>
+
+<div class="quiz" data-quiz='[
+  {
+    "q": "Roughly how many iterations does a binary search over the range 1 to 10<sup>18</sup> take?",
+    "opts": [
+      "About sixty iterations in total",
+      "About a million iterations total",
+      "About one thousand iterations total",
+      "About ten billion iterations total"
+    ],
+    "a": 0,
+    "why": "Each step halves the range, so the count is log₂(10<sup>18</sup>) ≈ 60. This is why an astronomically large n in the constraints is a direct hint to binary search: 10<sup>18</sup> is unreachable by looping, but trivially reachable by halving."
+  },
+  {
+    "q": "What must be true before you can binary search a list for a value?",
+    "opts": [
+      "The list has to be sorted first",
+      "The list has to hold only integers",
+      "The list has to fit inside memory",
+      "The list has to have unique values"
+    ],
+    "a": 0,
+    "why": "Sortedness is what makes the middle element informative — it tells you which half to discard. Without order there is no signal, and the best you can do is the O(n) scan. Duplicates are fine; that is what <code>bisect_left</code> and <code>bisect_right</code> are for."
+  },
+  {
+    "q": "You are searching a sorted list of 2·10<sup>5</sup> values, many times, in Python. Which is the right call?",
+    "opts": [
+      "<code>bisect_left(a, x)</code> on the list",
+      "<code>a.index(x)</code> on the sorted list",
+      "<code>x in a</code> tested on the sorted list",
+      "<code>a.count(x)</code> run on the sorted list"
+    ],
+    "a": 0,
+    "why": "<code>bisect_left</code> is O(log n) and runs in C. Both <code>a.index(x)</code> and <code>x in a</code> are O(n) linear scans that do not care that you sorted — inside a loop they turn the whole thing O(n²). Sorting only pays off if you then search like it is sorted."
+  },
+  {
+    "q": "Your check function is O(n) and you binary search it over a range up to 10<sup>9</sup>. Total complexity?",
+    "opts": [
+      "O(n log n), around thirty passes",
+      "O(n²), which is far too costly",
+      "O(n), one single pass over it",
+      "O(log n), independent of any n"
+    ],
+    "a": 0,
+    "why": "The search runs your check log₂(10<sup>9</sup>) ≈ 30 times, so the cost is 30 × O(n). Written as complexity that is O(n log n) — the same class the budget table allows for n ≤ 5·10<sup>5</sup>. The log factor is a multiplier of about thirty, not a new order of growth."
+  },
+  {
+    "q": "When can you binary search for an answer you do not know how to compute directly?",
+    "opts": [
+      "When the check is monotonic in it",
+      "When the input array is fully sorted",
+      "When the answer is a small integer",
+      "When the check runs in constant time"
+    ],
+    "a": 0,
+    "why": "Monotonic means: once the check turns true it never turns false again. That false-false-TRUE-TRUE edge is what you are hunting. The input array need not be sorted at all — you are searching the space of possible answers, not the data."
+  },
+  {
+    "q": "From lesson 0001: constraints say <code>n ≤ 1000</code>. What is the setter telling you?",
+    "opts": [
+      "A double loop is the intended solution",
+      "You must find a linear-time solution here",
+      "A binary search is needed on the answer",
+      "Only a closed-form formula will pass it"
+    ],
+    "a": 0,
+    "why": "1000² = 10<sup>6</sup>, one percent of the budget. Worth re-testing here because the new technique creates a trap: knowing binary search makes you want to use it. A small n is the setter telling you not to bother."
+  },
+  {
+    "q": "Why does the template use <code>hi = mid</code> but <code>lo = mid + 1</code>, rather than both moving by one?",
+    "opts": [
+      "Mid may itself still be the answer",
+      "It makes the loop run much faster",
+      "Python floors division towards zero",
+      "It keeps the range a power of two"
+    ],
+    "a": 0,
+    "why": "When the check passes at <code>mid</code>, mid is still a candidate — something smaller might also work, but you must not discard mid itself. When it fails, mid is definitively ruled out, so you can skip past it. Writing <code>hi = mid - 1</code> is the classic way to lose the answer."
+  }
+]'></div>
+
+<h2>Your turn — before lesson 0004</h2>
+
+<p>Two problems, in this order. For each one, write the complexity down <em>before</em> you write code — the habit from lesson 0001 does not stop being the point just because you now have a technique.</p>
+
+<ol>
+  <li><a href="https://cses.fi/problemset/task/1640">CSES 1640 — Sum of Two Values</a>. Solvable with sorting plus a search. (It is also solvable with the technique in <a href="0004-two-pointers.html">lesson 0004</a>, and with the set trick from lesson 0001 — three routes to the same budget. Worth noticing.)</li>
+  <li><a href="https://cses.fi/problemset/task/1620">CSES 1620 — Factory Machines</a>. The worked example above. Type it yourself rather than copying, and tell me what <span class="mono">hi</span> you chose and why.</li>
+</ol>
+
+<p>If the second one TLEs in Python, that is a useful result, not a failure — bring me the submission and we will count the operations together.</p>
+
+<div class="footer">
+  <h3>Notes</h3>
+  <p><span class="mono">1.</span> <a href="https://cses.fi/book/book.pdf">Competitive Programmer's Handbook</a>, §3.3 “Binary search”, p. 31.</p>
+  <p><span class="mono">2.</span> <a href="https://docs.python.org/3/library/bisect.html">Python documentation — <code>bisect</code></a>. The performance note on <code>insort</code> is quoted verbatim from that page.</p>
+  <p><span class="mono">3.</span> <a href="https://usaco.guide/silver/binary-search">USACO Guide — Binary Search (Silver)</a>. Same page on the cost: <em>“each iteration of the binary search cuts the search space in half, so the algorithm tests O(log N) values.”</em></p>
+
+  <h3>Read this next</h3>
+  <p><strong>Primary source:</strong> <a href="https://usaco.guide/silver/binary-search">USACO Guide — Binary Search (Silver)</a>. Read as far as the end of “Binary Searching on the Answer”; the rest is optional. Their code is C++/Java, but the shape is the shape you just learned.</p>
+
+  <h3>Related in this workspace</h3>
+  <ul>
+    <li>Previous: <a href="0002-counting-loops.html">Lesson 0002 — Counting loops</a></li>
+    <li>First: <a href="0001-from-n-to-your-time-budget.html">Lesson 0001 — From <em>n</em> to your time budget</a></li>
+    <li>Next: <a href="0004-two-pointers.html">Lesson 0004 — Two pointers</a></li>
+    <li>Reference: <a href="../reference/technique-by-budget.html">Technique by Budget</a> — the templates, printable</li>
+    <li>Reference: <a href="../reference/complexity-budget.html">The Complexity Budget Table</a></li>
+    <li>Mission: <a href="../MISSION.md">why we are doing this</a></li>
+  </ul>
+
+  <div class="ask">
+    <strong>Stuck on anything here?</strong> Ask me. “Why does <code>hi = mid</code> not skip the answer?”, “is my check actually monotonic?”, “why did my binary search hang?” — that last one especially. A hanging binary search is a rite of passage and takes one minute to diagnose together.
+  </div>
+</div>
+
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

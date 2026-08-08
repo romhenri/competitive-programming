@@ -1,0 +1,190 @@
+/* Shared stylesheet for the competitive-programming teaching workspace.
+   Every lesson and reference doc links this. Tufte-influenced: one column,
+   generous measure, sidenotes, restrained colour. Prints cleanly. */
+
+:root {
+  --bg:        #fffef9;
+  --fg:        #111110;
+  --muted:     #6b6a63;
+  --rule:      #ddd9cc;
+  --accent:    #a01b1b;   /* used sparingly: emphasis, links */
+  --code-bg:   #f4f1e6;
+  --ok:        #17603a;
+  --ok-bg:     #e6f2ea;
+  --bad:       #a01b1b;
+  --bad-bg:    #f7e9e9;
+  --measure:   38rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:      #14140f;
+    --fg:      #e8e6dd;
+    --muted:   #97948a;
+    --rule:    #33322b;
+    --accent:  #e58585;
+    --code-bg: #1f1e18;
+    --ok:      #7fd0a4;
+    --ok-bg:   #17281f;
+    --bad:     #e58585;
+    --bad-bg:  #2b1c1c;
+  }
+}
+
+html { font-size: 17px; -webkit-text-size-adjust: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  line-height: 1.55;
+  margin: 0 auto;
+  padding: 4rem 1.5rem 8rem;
+  max-width: var(--measure);
+}
+
+/* ---- Typography ---- */
+
+h1, h2, h3 { font-weight: 600; line-height: 1.2; }
+h1 { font-size: 2.1rem; margin: 0 0 .3rem; letter-spacing: -0.01em; }
+h2 { font-size: 1.35rem; margin: 3rem 0 .8rem; }
+h3 { font-size: 1.05rem; margin: 2rem 0 .5rem; }
+
+.subtitle {
+  font-style: italic;
+  color: var(--muted);
+  font-size: 1.1rem;
+  margin: 0 0 2.5rem;
+}
+
+.eyebrow {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: .72rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 1rem;
+}
+
+p { margin: 0 0 1.1rem; }
+
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+
+strong { font-weight: 600; }
+
+hr {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  margin: 3rem 0;
+}
+
+/* ---- Code ---- */
+
+code, pre, .mono, .num {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+code { font-size: .88em; background: var(--code-bg); padding: .1em .35em; border-radius: 3px; }
+
+pre {
+  background: var(--code-bg);
+  border-left: 2px solid var(--rule);
+  padding: .9rem 1.1rem;
+  overflow-x: auto;
+  font-size: .84rem;
+  line-height: 1.5;
+  margin: 0 0 1.1rem;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+.cmt { color: var(--muted); font-style: italic; }
+
+/* ---- Notes & callouts ---- */
+
+.note {
+  border-left: 2px solid var(--accent);
+  padding: .1rem 0 .1rem 1rem;
+  margin: 1.6rem 0;
+  color: var(--muted);
+  font-size: .93rem;
+}
+.note strong { color: var(--fg); }
+
+.keystone {
+  background: var(--code-bg);
+  border: 1px solid var(--rule);
+  padding: 1.2rem 1.4rem;
+  margin: 2rem 0;
+  text-align: center;
+}
+.keystone .big {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 1.25rem;
+  display: block;
+  margin-bottom: .4rem;
+}
+.keystone .cap { font-size: .85rem; color: var(--muted); font-style: italic; }
+
+/* ---- Tables ---- */
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: .9rem;
+  margin: 1.4rem 0;
+}
+th, td {
+  text-align: left;
+  padding: .4rem .6rem .4rem 0;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: baseline;
+}
+th {
+  font-size: .72rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--muted);
+  font-weight: 600;
+  border-bottom-width: 1.5px;
+}
+td.num, th.num { font-family: ui-monospace, Menlo, monospace; white-space: nowrap; }
+tbody tr:hover { background: var(--code-bg); }
+
+.table-scroll { overflow-x: auto; margin: 1.4rem 0; }
+.table-scroll table { margin: 0; }
+
+/* ---- Footer / navigation ---- */
+
+.footer {
+  margin-top: 4rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--rule);
+  font-size: .9rem;
+  color: var(--muted);
+}
+.footer a { color: var(--accent); }
+.footer h3 { margin-top: 0; font-size: .95rem; color: var(--fg); }
+
+.ask {
+  background: var(--code-bg);
+  border: 1px dashed var(--rule);
+  padding: 1rem 1.2rem;
+  margin: 2.5rem 0 0;
+  font-size: .92rem;
+  color: var(--muted);
+}
+.ask strong { color: var(--fg); }
+
+/* ---- Print ---- */
+
+@media print {
+  :root {
+    --bg: #fff; --fg: #000; --muted: #444; --rule: #bbb;
+    --code-bg: #f2f2f2; --accent: #000;
+  }
+  body { max-width: none; padding: 0; font-size: 11pt; }
+  .quiz, .ask, .noprint { display: none !important; }
+  a { text-decoration: none; }
+  table { page-break-inside: avoid; }
+  h2 { page-break-after: avoid; }
+}

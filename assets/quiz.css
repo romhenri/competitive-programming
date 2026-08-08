@@ -1,0 +1,89 @@
+/* Styles for the quiz widget in quiz.js. Depends on the variables in lesson.css. */
+
+.quiz {
+  border: 1px solid var(--rule);
+  background: var(--bg);
+  padding: 1.4rem 1.5rem 1.6rem;
+  margin: 2.5rem 0;
+}
+
+.quiz-head {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: .7rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+
+.quiz-q { font-size: 1.02rem; margin: 0 0 1.1rem; }
+.quiz-q code { font-size: .9em; }
+
+.quiz-opts { display: flex; flex-direction: column; gap: .45rem; }
+
+.quiz-opt {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: .86rem;
+  text-align: left;
+  padding: .6rem .8rem;
+  background: var(--code-bg);
+  color: var(--fg);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background .12s, border-color .12s;
+}
+.quiz-opt:hover:not(:disabled) { border-color: var(--accent); }
+.quiz-opt:disabled { cursor: default; opacity: .55; }
+.quiz-opt.right { background: var(--ok-bg); border-color: var(--ok); color: var(--fg); opacity: 1; }
+.quiz-opt.wrong { background: var(--bad-bg); border-color: var(--bad); color: var(--fg); opacity: 1; }
+
+.quiz-fb {
+  margin-top: 1.1rem;
+  padding-left: .9rem;
+  border-left: 2px solid var(--rule);
+  font-size: .9rem;
+  color: var(--muted);
+}
+.quiz-fb.ok { border-left-color: var(--ok); }
+.quiz-fb.no { border-left-color: var(--bad); }
+
+.quiz-verdict {
+  display: block;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: .7rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  margin-bottom: .35rem;
+}
+.quiz-fb.ok .quiz-verdict { color: var(--ok); }
+.quiz-fb.no .quiz-verdict { color: var(--bad); }
+.quiz-why code { font-size: .88em; }
+
+.quiz-next {
+  margin-top: 1.2rem;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: .8rem;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--accent);
+  color: var(--accent);
+  padding: .2rem 0;
+  cursor: pointer;
+}
+.quiz-next:hover { border-bottom-width: 2px; }
+
+.quiz-meter { display: flex; gap: .3rem; margin-bottom: 1.1rem; }
+.quiz-dot {
+  height: 3px; flex: 1;
+  background: var(--rule);
+}
+.quiz-dot.done { background: var(--accent); }
+.quiz-dot.here { background: var(--muted); }
+
+.quiz-score {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 2rem;
+  margin: 0 0 .4rem;
+}
+.quiz-verdict-final { font-style: italic; color: var(--muted); margin: 0; }

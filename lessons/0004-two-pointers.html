@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 0004 · Two pointers</title>
+<link rel="stylesheet" href="../assets/lesson.css">
+<link rel="stylesheet" href="../assets/quiz.css">
+</head>
+<body>
+
+<p class="eyebrow"><a href="../index.html">Course</a> · Lesson 0004</p>
+<h1>Two pointers</h1>
+<p class="subtitle">Binary search bought you a factor of twenty. This one buys you a factor of <em>n</em> — and teaches you to spot the nested loop that is secretly linear.</p>
+
+<h2>The collapse you have already seen</h2>
+
+<p>Lesson 0001 opened with this, and called it O(n²):</p>
+
+<pre><code>for i in range(n):
+    for j in range(i + 1, n):
+        if a[i] + a[j] == 0: ...</code></pre>
+
+<p>The fix there was a <code>set</code>. But a set only works because the target was exact. Change the question to <em>“find a pair summing to at least x”</em>, or <em>“find the closest pair”</em>, and the set is useless — the answer is not something you can look up.</p>
+
+<p>Two pointers is the technique for that whole family. It is how a double loop over an array collapses to a single pass.</p>
+
+<h2>The idea, and the rule that makes it fast</h2>
+
+<p>From the <em>Competitive Programmer's Handbook</em>: <em>“In the two pointers method, two pointers are used to iterate through the array values. Both pointers can move to one direction only, which ensures that the algorithm works efficiently.”</em><sup>1</sup></p>
+
+<p>Read the second half of that sentence again, because it is the entire lesson. <strong>The pointers never go backwards.</strong> That single restriction is what turns two nested loops into linear time.</p>
+
+<h3>Shape one: from the outside in</h3>
+
+<p>The array is sorted. One pointer starts at the smallest value, one at the largest. You are looking for a pair summing to <span class="mono">x</span>.</p>
+
+<pre><code><span class="cmt"># a is sorted</span>
+lo, hi = 0, n - 1
+while lo &lt; hi:
+    s = a[lo] + a[hi]
+    if s == x:
+        print("found"); break
+    elif s &lt; x:
+        lo += 1        <span class="cmt"># need more: only bigger values remain, so move left up</span>
+    else:
+        hi -= 1        <span class="cmt"># need less: move right down</span></code></pre>
+
+<p>Every branch either advances <span class="mono">lo</span> or retreats <span class="mono">hi</span>. They start <span class="mono">n</span> apart and meet, so the loop runs at most <span class="mono">n</span> times: <strong>O(n)</strong> after the sort. The sort dominates, so the whole solution is O(n log n) — comfortably inside the budget for <span class="mono">n ≤ 2·10<sup>5</sup></span>.<sup>2</sup></p>
+
+<p>Why is it correct to throw away <span class="mono">a[lo]</span> when the sum is too small? Because <span class="mono">a[hi]</span> is the largest value left. If <span class="mono">a[lo]</span> cannot reach <span class="mono">x</span> even paired with the biggest thing available, it cannot reach <span class="mono">x</span> with anything. It is eliminated forever, not just for this step. That is the same discarding-half instinct as <a href="0003-where-log-n-comes-from.html">binary search</a>, applied one element at a time.</p>
+
+<h3>Shape two: the sliding window</h3>
+
+<p>Both pointers move the <em>same</em> way, one chasing the other. This is the shape for questions about <strong>contiguous</strong> stretches: a subarray summing to <span class="mono">x</span>, the longest run with no repeats, the cheapest window covering everything.</p>
+
+<pre><code><span class="cmt"># positive values; find a contiguous subarray summing to exactly x</span>
+left = 0
+cur  = 0
+for right in range(n):
+    cur += a[right]              <span class="cmt"># grow the window on the right</span>
+    while cur &gt; x:
+        cur -= a[left]           <span class="cmt"># too big — shrink it from the left</span>
+        left += 1
+    if cur == x:
+        print(left + 1, right + 1); break</code></pre>
+
+<p>The window only ever grows on the right and shrinks on the left. It never slides backwards, and that is the whole trick.</p>
+
+<h2>Counting it: the nested loop that is not O(n²)</h2>
+
+<p>Now the part that matters most for your mission, because it is a place your lesson-0001 instincts will actively mislead you.</p>
+
+<p>Look at that code again. There is a <code>while</code> inside a <code>for</code>. Lesson 0002 taught you that nested loops multiply — <span class="mono">n</span> outer iterations × <span class="mono">n</span> inner iterations = O(n²). Apply that rule here and you will conclude the sliding window is quadratic, and you will be wrong.</p>
+
+<p>Count it properly. Do not ask <em>“how many times does the inner loop run per outer iteration?”</em> — that question has no good answer, because sometimes it runs zero times and sometimes it runs a hundred. Ask instead:</p>
+
+<div class="keystone">
+  <span class="big">How many times, in total, across the whole run?</span>
+  <span class="cap">The right question for any loop whose inner cost varies.</span>
+</div>
+
+<p>Every pass of the inner <code>while</code> increments <span class="mono">left</span>. <span class="mono">left</span> starts at 0, only ever increases, and can never pass <span class="mono">n</span>. So the inner loop executes <strong>at most n times in total, for the entire algorithm</strong> — not per outer iteration. The outer loop is <span class="mono">n</span>, the inner is <span class="mono">n</span> in total, and the answer is <span class="mono">n + n</span> = <strong>O(n)</strong>. Addition, not multiplication.</p>
+
+<p>This style of counting has a name — <em>amortised analysis</em> — and the handbook files two pointers under exactly that heading.<sup>1</sup> You do not need the theory. You need the reflex:</p>
+
+<p class="note">
+<strong>The reflex.</strong> When you see a loop nested inside a loop, before you write O(n²), check whether the inner loop has a counter that <em>never resets</em>. If it does, the two loops add instead of multiplying. If it resets on every outer iteration, they multiply and you were right the first time. This one distinction separates an O(n) solution from an O(n²) one, and the code looks nearly identical.
+</p>
+
+<h2>Which technique, given which budget</h2>
+
+<p>You now have two techniques and a budget table. Here is how they line up — this is the whole point of the last two lessons:</p>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th class="num">Budget says</th><th>Reach for</th><th>Because</th></tr></thead>
+  <tbody>
+    <tr><td class="num">O(log n)</td><td>Binary search alone</td><td>You are hunting one value in a huge range.</td></tr>
+    <tr><td class="num">O(n)</td><td>Two pointers, sliding window</td><td>One pass; each item enters and leaves once.</td></tr>
+    <tr><td class="num">O(n log n)</td><td>Sort, then two pointers <em>or</em> binary search</td><td>The sort is the log; the scan after it is free.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Note the middle row against the <a href="../reference/complexity-budget.html">budget table</a>: two pointers is listed there under O(n), alongside prefix sums and greedy. You were reading that row before you knew what it meant.</p>
+
+<p class="note">
+<strong>The Python tax, honestly.</strong> Two pointers is a <em>pure Python loop</em> — there is no built-in to hide it in, so you pay full interpreted price for all <span class="mono">2n</span> steps. Meanwhile <code>sorted()</code> runs in C. The consequence is genuinely counter-intuitive: at <span class="mono">n = 2·10<sup>5</sup></span>, an O(n log n) solution that pushes work into <code>sorted()</code> can beat an O(n) solution written as a hand-rolled loop on the clock. The complexity class still decides who survives a 10× bigger <span class="mono">n</span> — but do not assume the asymptotically better solution is the faster submission today. See the <a href="../reference/complexity-budget.html#the-python-tax">Python tax</a> note.
+</p>
+
+<h2>Check yourself</h2>
+
+<p>Mixed across all three lessons. If a lesson-0001 question feels harder than it did last week, that is the material being tested properly rather than recognised.</p>
+
+<div class="quiz" data-quiz='[
+  {
+    "q": "A <code>while</code> loop sits inside a <code>for</code> loop over n items. What makes the pair O(n) rather than O(n²)?",
+    "opts": [
+      "The inner counter is never reset",
+      "The inner loop is always very short",
+      "The outer loop breaks out of it early",
+      "The inner loop runs on sorted values"
+    ],
+    "a": 0,
+    "why": "If the inner loop advances a pointer that only ever moves forward and never resets, it can run at most n times across the entire algorithm. The loops then add rather than multiply. A counter reset at the top of each outer iteration gives you genuine O(n²)."
+  },
+  {
+    "q": "You sort an array, then run two pointers from both ends. What is the total complexity?",
+    "opts": [
+      "O(n log n), dominated by the sort",
+      "O(n), because the scan is linear",
+      "O(n²), because of the two loops",
+      "O(log n), because it discards half"
+    ],
+    "a": 0,
+    "why": "The scan itself is O(n) — the pointers cross once. But the sort in front of it is O(n log n), and the total is always the most expensive part. Never quote the clever bit and forget the setup."
+  },
+  {
+    "q": "Which of these questions is the sliding window shape designed to answer?",
+    "opts": [
+      "Longest contiguous run without repeats",
+      "Whether any two values sum to zero",
+      "Whether a given value is in the array",
+      "The number of distinct values present"
+    ],
+    "a": 0,
+    "why": "Sliding window is for <em>contiguous</em> stretches — the window grows on the right and shrinks on the left. Any-two-values is the opposite-ends shape or a set; membership is binary search; counting distinct values is a set, and none of those need contiguity."
+  },
+  {
+    "q": "The sorted array is scanned for a pair summing to x, and the sum is too small. What happens next?",
+    "opts": [
+      "The left pointer moves up one place",
+      "The right pointer moves down one place",
+      "Both of the pointers move inward once",
+      "The search restarts from the beginning"
+    ],
+    "a": 0,
+    "why": "Too small means you need a bigger sum, and only the left pointer can supply one by moving to a larger value. The elimination is permanent: if a[lo] cannot reach x paired with the largest value left, it cannot reach x with anything."
+  },
+  {
+    "q": "From lesson 0003: your O(n) check is wrapped in a binary search over a range up to 10<sup>9</sup>. Total cost?",
+    "opts": [
+      "O(n log n), about thirty passes",
+      "O(n²), which is far too costly",
+      "O(n), a single pass over data",
+      "O(log n), no matter what n is"
+    ],
+    "a": 0,
+    "why": "log₂(10<sup>9</sup>) ≈ 30, so the check runs about thirty times: 30 × O(n) = O(n log n). Contrast this with two pointers, which does the same job in a single pass when the problem has the right shape — the log is cheap, but free is cheaper."
+  },
+  {
+    "q": "Constraints say <code>n ≤ 2·10<sup>5</sup></code> and the answer needs a contiguous subarray. Where do you start?",
+    "opts": [
+      "A sliding window in a single pass",
+      "A double loop over every subarray",
+      "A binary search over the values",
+      "A set holding every subarray sum"
+    ],
+    "a": 0,
+    "why": "2·10<sup>5</sup> rules out the double loop over all subarrays — that is O(n²) = 4·10<sup>10</sup>. Contiguous plus a linear budget is the signature of a sliding window. The constraint told you the technique before you read the rest of the statement."
+  },
+  {
+    "q": "Why does the same problem sometimes have a set solution, a binary search solution, and a two pointer one?",
+    "opts": [
+      "Several routes can meet one budget",
+      "The judges accept any working answer",
+      "Sorting makes all three equivalent here",
+      "Python has built-ins for all of them"
+    ],
+    "a": 0,
+    "why": "The budget names a complexity class, not an algorithm. CSES 1640 is reachable by a set in O(n), by sorting plus binary search in O(n log n), and by sorting plus two pointers in O(n log n) — all inside budget. Pick the one you can write correctly fastest."
+  }
+]'></div>
+
+<h2>Your turn</h2>
+
+<p>Three problems, easiest first. The habit stays the same: read the constraint, name the budget, name the technique, <em>then</em> type.</p>
+
+<ol>
+  <li><a href="https://cses.fi/problemset/task/1090">CSES 1090 — Ferris Wheel</a>. Sort, then opposite ends. The cleanest two-pointer problem on the site.</li>
+  <li><a href="https://cses.fi/problemset/task/1660">CSES 1660 — Subarray Sums I</a>. The sliding window above, almost verbatim. Values are positive — notice where the code would break if they were not, and ask me about it.</li>
+  <li><a href="https://cses.fi/problemset/task/1640">CSES 1640 — Sum of Two Values</a> again, if you solved it with a set last lesson. Solve it a second time with two pointers. You will have to sort <em>indices</em> rather than values, because the output wants original positions — a small, worthwhile fight.</li>
+</ol>
+
+<p>Then tell me, for each: what complexity did you write down before coding, and did the submission agree with you?</p>
+
+<div class="footer">
+  <h3>Notes</h3>
+  <p><span class="mono">1.</span> <a href="https://cses.fi/book/book.pdf">Competitive Programmer's Handbook</a>, ch. 8 “Amortized analysis”, §8.1 “Two pointers method”, p. 77. The chapter opens by describing amortised analysis as estimating <em>“the total time used to all such operations during the execution of the algorithm, instead of focusing on individual operations”</em> — which is exactly the counting move in this lesson.</p>
+  <p><span class="mono">2.</span> <a href="https://usaco.guide/silver/two-pointers">USACO Guide — Two Pointers (Silver)</a>, on the sliding window variant: <em>“both pointers will move at most N times.”</em></p>
+
+  <h3>Read this next</h3>
+  <p><strong>Primary source:</strong> <a href="https://cses.fi/book/book.pdf">Competitive Programmer's Handbook</a>, §8.1 — three pages, and it is the source this lesson is built from. It gives the same two shapes with worked diagrams. Read §8.2 only if you are curious; it is beyond the mission for now.</p>
+
+  <h3>Related in this workspace</h3>
+  <ul>
+    <li>Previous: <a href="0003-where-log-n-comes-from.html">Lesson 0003 — Where <em>log n</em> comes from</a></li>
+    <li>First: <a href="0001-from-n-to-your-time-budget.html">Lesson 0001 — From <em>n</em> to your time budget</a></li>
+    <li>Reference: <a href="../reference/technique-by-budget.html">Technique by Budget</a> — both templates, printable</li>
+    <li>Reference: <a href="../reference/complexity-budget.html">The Complexity Budget Table</a></li>
+    <li>Mission: <a href="../MISSION.md">why we are doing this</a></li>
+  </ul>
+
+  <div class="ask">
+    <strong>Stuck on anything here?</strong> Ask me. The two highest-value questions after this lesson are “is <em>this</em> nested loop O(n) or O(n²)?” — send me any loop and we will count it together — and “why does the sliding window break on negative numbers?”, which is a genuinely good question with a clean answer.
+  </div>
+</div>
+
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reference · The Complexity Budget Table</title>
+<link rel="stylesheet" href="../assets/lesson.css">
+</head>
+<body>
+
+<p class="eyebrow"><a href="../index.html">Course</a> · Reference</p>
+<h1>The Complexity Budget Table</h1>
+<p class="subtitle">Read <span class="mono">n</span> from the constraints. Look up what you're allowed to spend. Then choose your algorithm.</p>
+
+<div class="keystone">
+  <span class="big">≈ 10<sup>8</sup> simple operations per second</span>
+  <span class="cap">The judge's budget. Time limits are usually 1–2 s, so ~10<sup>8</sup>–2·10<sup>8</sup> operations total.</span>
+</div>
+
+<h2>The table</h2>
+
+<p>Find the largest <span class="mono">n</span> in the problem's constraints, then read across. <strong>Anything at or above your row is safe; anything below it is a TLE.</strong></p>
+
+<div class="table-scroll">
+<table>
+  <thead>
+    <tr><th class="num">If n is up to…</th><th>You can afford</th><th>Which usually means</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="num">10</td><td class="num">O(n!), O(n<sup>7</sup>)</td><td>Try every permutation. Brute force everything.</td></tr>
+    <tr><td class="num">20</td><td class="num">O(2<sup>n</sup>·n), O(n<sup>5</sup>)</td><td>Try every subset. Bitmask DP.</td></tr>
+    <tr><td class="num">80</td><td class="num">O(n<sup>4</sup>)</td><td>Four nested loops.</td></tr>
+    <tr><td class="num">400</td><td class="num">O(n<sup>3</sup>)</td><td>Three nested loops. Floyd–Warshall. Matrix multiply.</td></tr>
+    <tr><td class="num">7,500</td><td class="num">O(n<sup>2</sup>)</td><td>Two nested loops. Every pair. Simple DP over a 2-D table.</td></tr>
+    <tr><td class="num">7·10<sup>4</sup></td><td class="num">O(n√n)</td><td>Square-root decomposition, Mo's algorithm.</td></tr>
+    <tr><td class="num">5·10<sup>5</sup></td><td class="num">O(n log n)</td><td><strong>Sorting.</strong> Binary search inside a loop. Heaps, sets, segment trees.</td></tr>
+    <tr><td class="num">5·10<sup>6</sup></td><td class="num">O(n)</td><td>One pass. Prefix sums, two pointers, sliding window, greedy.</td></tr>
+    <tr><td class="num">10<sup>18</sup></td><td class="num">O(log n), O(1)</td><td>Binary search alone. Maths. A closed-form formula.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p class="note">
+Source: <a href="https://usaco.guide/bronze/time-comp">USACO Guide — Time Complexity</a>. Their exact wording on the machine: <em>“a conservative estimate for the number of operations the grading server can handle per second is 10<sup>8</sup>, but it could be closer to 5·10<sup>8</sup> given good constant factors.”</em>
+</p>
+
+<h2>The two landmarks worth memorising</h2>
+
+<p>If you remember nothing else from the table, remember these two rows. They cover the majority of contest problems:</p>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th class="num">Constraint you'll see</th><th>What it is telling you</th></tr></thead>
+  <tbody>
+    <tr><td class="num">n ≤ 1000</td><td>“O(n<sup>2</sup>) is intended.” A double loop is <em>expected</em> — stop looking for something clever.</td></tr>
+    <tr><td class="num">n ≤ 2·10<sup>5</sup></td><td>“O(n log n) is intended.” Almost always: sort it, or use a set/heap. <strong>O(n<sup>2</sup>) will TLE.</strong></td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="the-python-tax">The Python tax</h2>
+
+<p>The table above assumes C++. Python executes roughly <strong>10–50× fewer</strong> operations per second, because every operation goes through the interpreter. Practical adjustments:</p>
+
+<ul>
+  <li>Treat your real budget as closer to <span class="mono">10<sup>7</sup></span> Python-level operations per second, not <span class="mono">10<sup>8</sup></span>.</li>
+  <li>Work pushed into C — <code>sorted()</code>, <code>sum()</code>, <code>set</code> lookups, slicing, <code>str.join</code> — runs at close to C++ speed. A Python loop does not. <strong>Prefer the built-in over the loop, always.</strong></li>
+  <li>When the table says your complexity is <em>borderline</em>, in Python assume it fails.</li>
+  <li>If the judge offers PyPy, use it — it closes much of the gap.</li>
+</ul>
+
+<p class="note">
+<strong>Caveat:</strong> the 10–50× figure is folklore from community blogs, not a measurement. This workspace has a note to measure it properly — see <em>Gaps</em> in <a href="../RESOURCES.md">RESOURCES.md</a>.
+</p>
+
+<h2>Sanity checks before you submit</h2>
+
+<ol>
+  <li>What is the biggest <span class="mono">n</span> in the constraints?</li>
+  <li>What is my solution's complexity?</li>
+  <li>Substitute: how many operations is that, actually? (<span class="mono">n = 2·10<sup>5</sup></span>, O(n<sup>2</sup>) → <span class="mono">4·10<sup>10</sup></span>. Dead.)</li>
+  <li>Is there a <em>second</em> variable? Many problems have <span class="mono">n</span> queries <em>and</em> <span class="mono">q</span> queries — the cost is often <span class="mono">q · (cost per query)</span>.</li>
+  <li>Is there a sum-of-n clause? <em>“the sum of n over all test cases does not exceed 2·10<sup>5</sup>”</em> means you budget against the sum, not per test case.</li>
+</ol>
+
+<div class="footer">
+  <h3>Related</h3>
+  <ul>
+    <li>Reference: <a href="technique-by-budget.html">Technique by Budget</a> — once you know what you can afford, this says what to write</li>
+    <li>Lesson: <a href="../lessons/0001-from-n-to-your-time-budget.html">0001 — From <em>n</em> to your time budget</a></li>
+    <li>Lesson: <a href="../lessons/0002-counting-loops.html">0002 — Counting loops</a></li>
+    <li>Lesson: <a href="../lessons/0003-where-log-n-comes-from.html">0003 — Where <em>log n</em> comes from</a></li>
+    <li>Lesson: <a href="../lessons/0004-two-pointers.html">0004 — Two pointers</a></li>
+    <li>Primary source: <a href="https://usaco.guide/bronze/time-comp">USACO Guide — Time Complexity</a></li>
+    <li>Book: <a href="https://cses.fi/book/book.pdf">Competitive Programmer's Handbook</a>, ch. 2</li>
+  </ul>
+  <p class="noprint"><em>Print this one and keep it next to you during contests.</em></p>
+</div>
+
+</body>
+</html>
