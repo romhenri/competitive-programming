@@ -19,6 +19,9 @@
 <table>
   <thead><tr><th class="num">Budget</th><th>Technique</th><th>Signature in the problem</th></tr></thead>
   <tbody>
+    <tr><td class="num">O(n!)</td><td>Try every permutation (<code>itertools.permutations</code>)</td><td><span class="mono">n ≤ 10</span>. Ordering or arrangement questions.</td></tr>
+    <tr><td class="num">O(2<sup>n</sup>·n)</td><td>Try every subset (bitmask, or <code>combinations</code>)</td><td><span class="mono">n ≤ 20</span>. “Choose any group of these.”</td></tr>
+    <tr><td class="num">O(2<sup>n/2</sup>)</td><td>Meet in the middle</td><td><span class="mono">n ≤ 40</span> with a subset-flavoured question.</td></tr>
     <tr><td class="num">O(log n)</td><td>Binary search alone</td><td><span class="mono">n</span> up to 10<sup>9</sup>–10<sup>18</sup>. <span class="mono">n</span> is a number to compute with, not a list.</td></tr>
     <tr><td class="num">O(n)</td><td>Two pointers / sliding window</td><td>“Contiguous”, “subarray”, “window”, “pair” on sorted data.</td></tr>
     <tr><td class="num">O(n log n)</td><td>Sort, then binary search or two pointers</td><td><span class="mono">n ≤ 2·10<sup>5</sup></span>, the most common constraint in the sport.</td></tr>
@@ -167,9 +170,14 @@ for right in range(n):
 
   <h3>Related</h3>
   <ul>
+    <li>Reference: <a href="python-costs.html">Python Operation Costs</a> — what each line actually costs</li>
+    <li>Reference: <a href="glossary.html">Glossary</a></li>
     <li>Reference: <a href="complexity-budget.html">The Complexity Budget Table</a> — read that one first</li>
+    <li>Reference: <a href="bitwise-cheatsheet.html">Bitwise &amp; Bitmask Cheat Sheet</a> — the templates for the top two rows</li>
     <li>Lesson: <a href="../lessons/0003-where-log-n-comes-from.html">0003 — Where <em>log n</em> comes from</a></li>
     <li>Lesson: <a href="../lessons/0004-two-pointers.html">0004 — Two pointers</a></li>
+    <li>Lesson: <a href="../lessons/0005-complete-search.html">0005 — Complete search</a></li>
+    <li>Lesson: <a href="../lessons/0006-bitmasks.html">0006 — Bitmasks</a></li>
   </ul>
   <p class="noprint"><em>Print this and the budget table together. Two pages, one contest.</em></p>
 </div>

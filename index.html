@@ -48,13 +48,13 @@
 
 <p class="eyebrow">Course Hub</p>
 <h1>Competitive Programming</h1>
-<p class="subtitle">Codeforces, AtCoder and CSES — in Python. Solving the problem is the easy half; solving it inside the time limit is the sport.</p>
+<p class="subtitle">Codeforces, AtCoder and CSES, in Python. Solving the problem is the easy half; solving it inside the time limit is the sport.</p>
 
-<p>The <a href="MISSION.md">mission</a>: predict TLE <em>before</em> submitting, not after — and know which technique reaches the budget once you've read it.</p>
+<p>The <a href="MISSION.md">mission</a>: predict TLE <em>before</em> submitting, not after, and know which technique reaches the budget once you've read it.</p>
 
-<h2>Track 1 — Time &amp; Space Complexity</h2>
+<h2>Lessons</h2>
 
-<p>Every other topic in this sport is priced in complexity, so it goes first. Start at 0001 and work down.</p>
+<p>Every topics:</p>
 
 <ul class="index">
   <li>
@@ -71,7 +71,7 @@
       <span class="n">0002</span>
       <span>
         <span class="t">Counting loops</span>
-        <span class="d">Nesting multiplies, sequential takes the max — plus the hidden loops inside Python one-liners like <code>x in list</code>.</span>
+        <span class="d">Nesting multiplies, sequential takes the max, plus the hidden loops inside Python one-liners like <code>x in list</code>.</span>
       </span>
     </a>
   </li>
@@ -80,7 +80,7 @@
       <span class="n">0003</span>
       <span>
         <span class="t">Where <em>log n</em> comes from</span>
-        <span class="d">Halving, binary search, and the template that cannot loop forever — plus binary searching the <em>answer</em>, the move that wins contests.</span>
+        <span class="d">Halving, binary search, and the template that cannot loop forever, plus binary searching the <em>answer</em>, the move that wins contests.</span>
       </span>
     </a>
   </li>
@@ -93,12 +93,30 @@
       </span>
     </a>
   </li>
-  <li class="todo">
-    <a class="row" href="#">
+  <li>
+    <a class="row" href="lessons/0005-complete-search.html">
       <span class="n">0005</span>
       <span>
+        <span class="t">Complete search</span>
+        <span class="d">The top rows of the budget table, where a tiny <em>n</em> means brute force is the intended answer, plus where the cliff is and how to prune.</span>
+      </span>
+    </a>
+  </li>
+  <li>
+    <a class="row" href="lessons/0006-bitmasks.html">
+      <span class="n">0006</span>
+      <span>
+        <span class="t">Bitmasks</span>
+        <span class="d">A subset is an integer. The operators, where the <em>·n</em> in O(2<sup>n</sup>·n) comes from, and two bit tricks worth knowing.</span>
+      </span>
+    </a>
+  </li>
+  <li class="todo">
+    <a class="row" href="#">
+      <span class="n">0007</span>
+      <span>
         <span class="t">Prefix sums<span class="tag">next</span></span>
-        <span class="d">The other O(n) technique — and the fallback when a sliding window meets negative numbers.</span>
+        <span class="d">The other O(n) technique, and the fallback when a sliding window meets negative numbers.</span>
       </span>
     </a>
   </li>
@@ -106,7 +124,7 @@
 
 <h2>Reference</h2>
 
-<p>Compressed, printable, meant to be revisited — unlike lessons.</p>
+<p>Compressed, printable, meant to be revisited, unlike lessons.</p>
 
 <ul class="index">
   <li>
@@ -127,17 +145,44 @@
       </span>
     </a>
   </li>
+  <li>
+    <a class="row" href="reference/python-costs.html">
+      <span class="n">↳</span>
+      <span>
+        <span class="t">Python Operation Costs</span>
+        <span class="d">What every line costs — <code>list</code>, <code>set</code>, <code>dict</code>, <code>deque</code>, <code>str</code>, <code>heapq</code>, <code>bisect</code> — and the five swaps that cost people contests.</span>
+      </span>
+    </a>
+  </li>
+  <li>
+    <a class="row" href="reference/bitwise-cheatsheet.html">
+      <span class="n">↳</span>
+      <span>
+        <span class="t">Bitwise &amp; Bitmask Cheat Sheet</span>
+        <span class="d">Python syntax for treating an integer as a set: the operators, subset enumeration, and the tricks worth memorising.</span>
+      </span>
+    </a>
+  </li>
+  <li>
+    <a class="row" href="reference/glossary.html">
+      <span class="n">↳</span>
+      <span>
+        <span class="t">Glossary</span>
+        <span class="d">Every term the lessons use, defined once: amortised, monotonic, invariant, TLE, sum-of-n, sliding window.</span>
+      </span>
+    </a>
+  </li>
 </ul>
 
 <div class="footer">
   <h3>Workspace</h3>
   <ul>
-    <li><a href="MISSION.md">MISSION.md</a> — why we're doing this</li>
-    <li><a href="RESOURCES.md">RESOURCES.md</a> — trusted sources and communities</li>
+    <li><a href="MISSION.md">MISSION.md</a>: why we're doing this</li>
+    <li><a href="RESOURCES.md">RESOURCES.md</a>: trusted sources and communities</li>
   </ul>
 
   <h3>Primary source</h3>
-  <p><a href="https://usaco.guide/bronze/time-comp">USACO Guide — Time Complexity (Bronze)</a>. Free, maintained by USACO finalists, and the source of the budget table.</p>
+  <p><a href="https://usaco.guide/bronze/time-comp">USACO Guide: Time Complexity (Bronze)</a>. Free, maintained by USACO finalists, and the source of the budget table.</p>
 </div>
 
 </body>

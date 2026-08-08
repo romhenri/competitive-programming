@@ -14,9 +14,9 @@
 <h1>Counting loops</h1>
 <p class="subtitle">Lesson 0001 told you what you're <em>allowed</em> to spend. This one tells you what your code actually <em>costs</em>. Three rules, and you can price almost any contest solution on sight.</p>
 
-<p><a href="0001-from-n-to-your-time-budget.html">Last lesson</a> you read <code>n ≤ 200000</code> and concluded “O(n log n), no double loops”. Useful — but only if you can look at your own code and say which class it lands in. That's this lesson.</p>
+<p><a href="0001-from-n-to-your-time-budget.html">Last lesson</a> you read <code>n ≤ 200000</code> and concluded “O(n log n), no double loops”. Useful, but only if you can look at your own code and say which class it lands in. That's this lesson.</p>
 
-<h2>Rule 1 — a loop costs iterations × body</h2>
+<h2>Rule 1: a loop costs iterations × body</h2>
 
 <p>Start with the only thing you ever really count: <strong>how many times does the innermost line run?</strong></p>
 
@@ -24,21 +24,21 @@
 for x in a:          <span class="cmt"># n iterations…</span>
     total += x       <span class="cmt"># …of a body costing O(1)</span></code></pre>
 
-<p>n iterations of constant work: <strong>O(n)</strong>. The <code>total = 0</code> before the loop is O(1) and vanishes — a single fixed cost never changes the growth shape.<sup>1</sup></p>
+<p>n iterations of constant work: <strong>O(n)</strong>. The <code>total = 0</code> before the loop is O(1) and vanishes; a single fixed cost never changes the growth shape.<sup>1</sup></p>
 
-<h2>Rule 2 — nesting multiplies</h2>
+<h2>Rule 2: nesting multiplies</h2>
 
 <pre><code>for i in range(n):        <span class="cmt"># n times…</span>
     for j in range(m):    <span class="cmt"># …m times each</span>
         grid[i][j] = 0</code></pre>
 
-<p><span class="mono">n × m</span> — and when both bounds are <span class="mono">n</span>, <strong>O(n²)</strong>. Nesting is multiplication, always. Three levels deep is O(n³).</p>
+<p><span class="mono">n × m</span>, and when both bounds are <span class="mono">n</span>, <strong>O(n²)</strong>. Nesting is multiplication, always. Three levels deep is O(n³).</p>
 
 <p class="note">
-<strong>Watch for two different variables.</strong> Contest problems love giving you <span class="mono">n</span> items and <span class="mono">q</span> queries. O(n·q) with <span class="mono">n, q ≤ 10<sup>5</sup></span> is 10<sup>10</sup> — dead — even though neither number looks alarming on its own. Always substitute both.
+<strong>Watch for two different variables.</strong> Contest problems love giving you <span class="mono">n</span> items and <span class="mono">q</span> queries. O(n·q) with <span class="mono">n, q ≤ 10<sup>5</sup></span> is 10<sup>10</sup>, dead on arrival, even though neither number looks alarming on its own. Always substitute both.
 </p>
 
-<h2>Rule 3 — sequential takes the max</h2>
+<h2>Rule 3: sequential takes the max</h2>
 
 <pre><code>for x in a:              <span class="cmt"># O(n)</span>
     ...
@@ -46,7 +46,7 @@ for i in range(n):       <span class="cmt"># O(n²)</span>
     for j in range(n):
         ...</code></pre>
 
-<p>One after the other, so the cost is <span class="mono">n + n²</span>. But at <span class="mono">n = 10<sup>5</sup></span> that's <span class="mono">10<sup>5</sup> + 10<sup>10</sup></span> — the first term is a rounding error. <strong>Sequential blocks: keep the worst, discard the rest.</strong> This is O(n²).</p>
+<p>One after the other, so the cost is <span class="mono">n + n²</span>. But at <span class="mono">n = 10<sup>5</sup></span> that's <span class="mono">10<sup>5</sup> + 10<sup>10</sup></span>; the first term is a rounding error. <strong>Sequential blocks: keep the worst, discard the rest.</strong> This is O(n²).</p>
 
 <div class="keystone">
   <span class="big">nested → multiply &nbsp;·&nbsp; sequential → take the max</span>
@@ -55,7 +55,7 @@ for i in range(n):       <span class="cmt"># O(n²)</span>
 
 <h2>The trap: loops that depend on the outer variable</h2>
 
-<p>This one catches everybody. The inner loop doesn't run <span class="mono">n</span> times — it runs a different number of times on each pass:</p>
+<p>This one catches everybody. The inner loop doesn't run <span class="mono">n</span> times; it runs a different number of times on each pass:</p>
 
 <pre><code>for i in range(n):
     for j in range(i + 1, n):    <span class="cmt"># n-1, then n-2, then n-3, …</span>
@@ -63,10 +63,10 @@ for i in range(n):       <span class="cmt"># O(n²)</span>
 
 <p>The total is <span class="mono">(n−1) + (n−2) + … + 1 = n(n−1)/2</span>, which is about <strong>n²/2</strong>.</p>
 
-<p>So is it O(n²) or O(n²/2)? <strong>O(n²).</strong> Big O throws away constant factors, and here's the practical reason why: halving 10<sup>10</sup> still leaves you 50× over budget. Being twice as fast never rescues the wrong complexity class — only changing the class does.</p>
+<p>So is it O(n²) or O(n²/2)? <strong>O(n²).</strong> Big O throws away constant factors, and here's the practical reason why: halving 10<sup>10</sup> still leaves you 50× over budget. Being twice as fast never rescues the wrong complexity class; only changing the class does.</p>
 
 <p class="note">
-This shape — “every pair, without repeats” — is extremely common. Learn to recognise it on sight and price it at <strong>O(n²)</strong> without doing the arithmetic.
+This shape, “every pair, without repeats”, is extremely common. Learn to recognise it on sight and price it at <strong>O(n²)</strong> without doing the arithmetic.
 </p>
 
 <h2>The Python trap: the loop you didn't write</h2>
@@ -80,7 +80,7 @@ This shape — “every pair, without repeats” — is extremely common. Learn 
     <tr><td><code>x in my_list</code></td><td class="num">O(n)</td><td>Scans until found. A loop in disguise.</td></tr>
     <tr><td><code>x in my_set</code></td><td class="num">O(1)</td><td>Hashes straight to the slot.</td></tr>
     <tr><td><code>my_list.count(x)</code></td><td class="num">O(n)</td><td>Scans the whole thing, every time.</td></tr>
-    <tr><td><code>sorted(a)</code></td><td class="num">O(n log n)</td><td>It's a sort. Cheap — but not free.</td></tr>
+    <tr><td><code>sorted(a)</code></td><td class="num">O(n log n)</td><td>It's a sort. Cheap, but not free.</td></tr>
     <tr><td><code>a[i:j]</code></td><td class="num">O(j−i)</td><td>Slicing <em>copies</em>. It does not view.</td></tr>
     <tr><td><code>a.pop(0)</code></td><td class="num">O(n)</td><td>Shifts every remaining element left.</td></tr>
   </tbody>
@@ -95,7 +95,7 @@ for x in a:
         return True
     seen.append(x)</code></pre>
 
-<p>It's <strong>O(n²)</strong>. Change <code>[]</code> to <code>set()</code> — one character of difference in how it reads — and it becomes O(n). This is the most common way a Python competitor TLEs a solution that looks obviously linear.</p>
+<p>It's <strong>O(n²)</strong>. Change <code>[]</code> to <code>set()</code> (one character of difference in how it reads) and it becomes O(n). This is the most common way a Python competitor TLEs a solution that looks obviously linear.</p>
 
 <h2>A taste of O(log n)</h2>
 
@@ -104,54 +104,54 @@ for x in a:
 <pre><code>while n &gt; 1:
     n //= 2      <span class="cmt"># 1000 → 500 → 250 → 125 → … → 1</span></code></pre>
 
-<p>Starting at a million, that's 20 iterations. At a billion, 30. <strong>Halving until you hit 1 is O(log n)</strong> — and log n is so small it's almost free. This is where binary search gets its power, and it's the subject of a later lesson.</p>
+<p>Starting at a million, that's 20 iterations. At a billion, 30. <strong>Halving until you hit 1 is O(log n)</strong>, and log n is so small it's almost free. This is where binary search gets its power, and it's the subject of a later lesson.</p>
 
 <h2>Check yourself</h2>
 
-<p>Price each snippet. Don't scroll up — retrieving it wrong and being corrected teaches you more than reading it again.</p>
+<p>Price each snippet. Don't scroll up; retrieving it wrong and being corrected teaches you more than reading it again.</p>
 
 <div class="quiz" data-quiz='[
   {
     "q": "<pre><code>for i in range(n):\n    for j in range(n):\n        s += grid[i][j]</code></pre>What is the complexity?",
-    "opts": ["O(n²) — nesting multiplies", "O(n) — one pass in total", "O(n log n) — a sorted scan", "O(2ⁿ) — it grows too fast"],
+    "opts": ["O(n²), nesting multiplies", "O(n), one pass in total", "O(n log n), a sorted scan", "O(2ⁿ), it grows too fast"],
     "a": 0,
-    "why": "Rule 2: n iterations, each running an n-iteration loop. n × n = O(n²). At n = 10<sup>5</sup> that is 10<sup>10</sup> operations — nowhere near the budget."
+    "why": "Rule 2: n iterations, each running an n-iteration loop. n × n = O(n²). At n = 10<sup>5</sup> that is 10<sup>10</sup> operations, nowhere near the budget."
   },
   {
     "q": "<pre><code>a.sort()\nfor x in a:\n    print(x)</code></pre>What is the complexity?",
-    "opts": ["O(n log n) — the sort dominates", "O(n) — the loop is the cost", "O(n²) — the sort costs n × n", "O(log n) — sorting halves it"],
+    "opts": ["O(n log n), the sort dominates", "O(n), the loop is the cost", "O(n²), the sort costs n × n", "O(log n), sorting halves it"],
     "a": 0,
-    "why": "Rule 3: sequential blocks, so take the max of O(n log n) and O(n). The sort wins. Note it is <em>sequential</em>, not nested — a sort <em>inside</em> a loop would be O(n² log n)."
+    "why": "Rule 3: sequential blocks, so take the max of O(n log n) and O(n). The sort wins. Note it is <em>sequential</em>, not nested; a sort <em>inside</em> a loop would be O(n² log n)."
   },
   {
     "q": "<pre><code>for i in range(n):\n    for j in range(i + 1, n):\n        check(a[i], a[j])</code></pre>What is the complexity?",
-    "opts": ["O(n²) — the ½ is discarded", "O(n) — each item is seen once", "O(n log n) — j shrinks by half", "O(n³) — three variables in play"],
+    "opts": ["O(n²), the ½ is discarded", "O(n), each item is seen once", "O(n log n), j shrinks by half", "O(n³), three variables in play"],
     "a": 0,
     "why": "The total is n(n−1)/2 ≈ n²/2. Big O drops the constant, so it is O(n²). Being twice as fast never rescues a wrong complexity class."
   },
   {
     "q": "<pre><code>seen = []\nfor x in a:\n    if x in seen:\n        return True\n    seen.append(x)</code></pre>What is the complexity?",
-    "opts": ["O(n²) — <code>in</code> scans the list", "O(n) — one pass over the array", "O(n log n) — lookups cost a log", "O(1) — it returns immediately"],
+    "opts": ["O(n²), <code>in</code> scans the list", "O(n), one pass over the array", "O(n log n), lookups cost a log", "O(1), it returns immediately"],
     "a": 0,
     "why": "<code>x in list</code> is O(n), sitting inside an O(n) loop. Rule 1: iterations × body. Swap the list for a <code>set()</code> and the body drops to O(1), making the whole thing O(n)."
   },
   {
     "q": "You have <code>n</code> items and <code>q</code> queries, both up to 10<sup>5</sup>, and your solution loops over every item for every query. What happens?",
-    "opts": ["TLE — n·q is about 10<sup>10</sup> ops", "Passes — both n and q are small", "TLE — but only from memory use", "Passes — the judge allows 10s"],
+    "opts": ["TLE: n·q is about 10<sup>10</sup> ops", "Passes: both n and q are small", "TLE, but only from memory use", "Passes: the judge allows 10s"],
     "a": 0,
     "why": "Neither 10<sup>5</sup> looks alarming alone, but the cost is their product: 10<sup>10</sup>, about 100× over budget. Always substitute <em>every</em> variable in the constraints, not just n."
   },
   {
     "q": "<pre><code>while n > 1:\n    n //= 2</code></pre>Starting from n = 10<sup>9</sup>, roughly how many iterations run?",
-    "opts": ["About 30 — it halves each time", "About 10<sup>9</sup> — one per value", "About 10<sup>4</sup> — the square root", "About 10<sup>8</sup> — the ops budget"],
+    "opts": ["About 30, it halves each time", "About 10<sup>9</sup>, one per value", "About 10<sup>4</sup>, the square root", "About 10<sup>8</sup>, the ops budget"],
     "a": 0,
-    "why": "Halving to 1 takes log₂(n) steps, and log₂(10<sup>9</sup>) ≈ 30. This is O(log n) — so cheap it is nearly free, which is exactly why binary search is worth reaching for."
+    "why": "Halving to 1 takes log₂(n) steps, and log₂(10<sup>9</sup>) ≈ 30. This is O(log n), so cheap it is nearly free, which is exactly why binary search is worth reaching for."
   }
 ]'></div>
 
-<h2>Your turn — before the next lesson</h2>
+<h2>Your turn: before the next lesson</h2>
 
-<p>Open the last thing you wrote in Python — a contest attempt, a script, anything with a loop in it. Then:</p>
+<p>Open the last thing you wrote in Python: a contest attempt, a script, anything with a loop in it. Then:</p>
 
 <ol>
   <li>Find the innermost line and count how many times it runs, in terms of the input size.</li>
@@ -163,22 +163,22 @@ for x in a:
 
 <div class="footer">
   <h3>Notes</h3>
-  <p><span class="mono">1.</span> Formally, O(n) + O(1) = O(n) because Big O describes growth as n → ∞. See <a href="https://usaco.guide/bronze/time-comp">USACO Guide — Time Complexity</a> for the definition and the same three loop rules.</p>
-  <p><span class="mono">2.</span> Python operation costs are documented officially at <a href="https://wiki.python.org/moin/TimeComplexity">wiki.python.org — TimeComplexity</a>. Worth one careful read; it is the authority for the table above.</p>
+  <p><span class="mono">1.</span> Formally, O(n) + O(1) = O(n) because Big O describes growth as n → ∞. See <a href="https://usaco.guide/bronze/time-comp">USACO Guide: Time Complexity</a> for the definition and the same three loop rules.</p>
+  <p><span class="mono">2.</span> Python operation costs are documented officially at <a href="https://wiki.python.org/moin/TimeComplexity">wiki.python.org: TimeComplexity</a>. Worth one careful read; it is the authority for the table above.</p>
 
   <h3>Read this next</h3>
-  <p><strong>Primary source:</strong> <a href="https://wiki.python.org/moin/TimeComplexity">Python Wiki — TimeComplexity</a>. The official cost of every <code>list</code>, <code>set</code> and <code>dict</code> operation, in one page. For a Python competitor this is the single highest-value reference in existence — the O(n²) you accidentally wrote is almost always on this page.</p>
+  <p><strong>Primary source:</strong> <a href="https://wiki.python.org/moin/TimeComplexity">Python Wiki: TimeComplexity</a>. The official cost of every <code>list</code>, <code>set</code> and <code>dict</code> operation, in one page. For a Python competitor this is the single highest-value reference in existence; the O(n²) you accidentally wrote is almost always on this page.</p>
 
   <h3>Related in this workspace</h3>
   <ul>
-    <li>Previous: <a href="0001-from-n-to-your-time-budget.html">0001 — From <em>n</em> to your time budget</a></li>
-    <li>Next: <a href="0003-where-log-n-comes-from.html">0003 — Where <em>log n</em> comes from</a></li>
+    <li>Previous: <a href="0001-from-n-to-your-time-budget.html">0001: From <em>n</em> to your time budget</a></li>
+    <li>Next: <a href="0003-where-log-n-comes-from.html">0003: Where <em>log n</em> comes from</a></li>
     <li>Reference: <a href="../reference/complexity-budget.html">The Complexity Budget Table</a></li>
     <li>All resources: <a href="../RESOURCES.md">RESOURCES.md</a></li>
   </ul>
 
   <div class="ask">
-    <strong>Stuck on anything here?</strong> Ask me — a snippet you can't price, a rule that feels arbitrary, a submission that TLE'd for reasons you can't see. Answering it beats moving on with a gap.
+    <strong>Stuck on anything here?</strong> Ask me: a snippet you can't price, a rule that feels arbitrary, a submission that TLE'd for reasons you can't see. Answering it beats moving on with a gap.
   </div>
 </div>
 

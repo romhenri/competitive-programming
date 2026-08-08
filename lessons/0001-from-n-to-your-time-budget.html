@@ -24,7 +24,7 @@
 
 <p>Learning to hear that takes exactly two facts.</p>
 
-<h2>Fact one — the machine's budget</h2>
+<h2>Fact one: the machine's budget</h2>
 
 <p>A judge server runs on the order of <strong>10<sup>8</sup> simple operations per second</strong>. Time limits are typically 1–2 seconds. So your whole solution gets a budget of roughly a hundred million operations.<sup>1</sup></p>
 
@@ -35,7 +35,7 @@
 
 <p>That is not a lot and it is not a little. It is enough to touch two hundred thousand items five hundred times each. It is nowhere near enough to compare every pair of a million items.</p>
 
-<h2>Fact two — complexity is a recipe for counting</h2>
+<h2>Fact two: complexity is a recipe for counting</h2>
 
 <p>“Time complexity” sounds abstract. Operationally it is not. It is a formula with <span class="mono">n</span> in it, and you use it by <strong>substituting the largest <span class="mono">n</span> the problem allows and reading off a number</strong>.</p>
 
@@ -47,7 +47,7 @@ for i in range(n):
         if a[i] + a[j] == 0:
             print("YES"); return</code></pre>
 
-<p>The inner line runs once per pair. There are about <span class="mono">n²/2</span> pairs. We call this <strong>O(n²)</strong> — read aloud as “order n squared”. The notation deliberately throws away the <span class="mono">/2</span> and any constant: at the scale we care about, only the <em>shape</em> of the growth matters.<sup>2</sup></p>
+<p>The inner line runs once per pair. There are about <span class="mono">n²/2</span> pairs. We call this <strong>O(n²)</strong>, read aloud as “order n squared”. The notation deliberately throws away the <span class="mono">/2</span> and any constant: at the scale we care about, only the <em>shape</em> of the growth matters.<sup>2</sup></p>
 
 <p>Now substitute. That is the whole skill:</p>
 
@@ -84,25 +84,25 @@ for x in a:
   <li><strong>Only then</strong> pick an algorithm.</li>
 </ol>
 
-<p>Step 2 is a lookup, and you should not derive it under contest pressure — that is what the <a href="../reference/complexity-budget.html">Complexity Budget Table</a> is for. Print it. But two rows are worth burning into memory right now, because they cover most of what you will meet:</p>
+<p>Step 2 is a lookup, and you should not derive it under contest pressure; that is what the <a href="../reference/complexity-budget.html">Complexity Budget Table</a> is for. Print it. But two rows are worth burning into memory right now, because they cover most of what you will meet:</p>
 
 <div class="table-scroll">
 <table>
   <thead><tr><th class="num">Constraint</th><th>Intended solution</th></tr></thead>
   <tbody>
-    <tr><td class="num">n ≤ 1000</td><td>O(n²) — a double loop is expected. Stop looking for something clever.</td></tr>
-    <tr><td class="num">n ≤ 2·10<sup>5</sup></td><td>O(n log n) — sort it, or use a set/heap. A double loop will TLE.</td></tr>
+    <tr><td class="num">n ≤ 1000</td><td>O(n²): a double loop is expected. Stop looking for something clever.</td></tr>
+    <tr><td class="num">n ≤ 2·10<sup>5</sup></td><td>O(n log n): sort it, or use a set/heap. A double loop will TLE.</td></tr>
   </tbody>
 </table>
 </div>
 
 <p class="note">
-<strong>You write Python, so add a tax.</strong> The 10<sup>8</sup> figure assumes C++. A Python <em>loop</em> manages closer to 10<sup>7</sup> operations per second. But work you push into a built-in — <code>sorted()</code>, <code>sum()</code>, <code>in</code> on a set — runs in C at nearly full speed. Rule of thumb: <em>when the table says “borderline”, in Python read “fails”.</em> More in the <a href="../reference/complexity-budget.html#the-python-tax">reference sheet</a>.
+<strong>You write Python, so add a tax.</strong> The 10<sup>8</sup> figure assumes C++. A Python <em>loop</em> manages closer to 10<sup>7</sup> operations per second. But work you push into a built-in (<code>sorted()</code>, <code>sum()</code>, <code>in</code> on a set) runs in C at nearly full speed. Rule of thumb: <em>when the table says “borderline”, in Python read “fails”.</em> More in the <a href="../reference/complexity-budget.html#the-python-tax">reference sheet</a>.
 </p>
 
 <h2>Check yourself</h2>
 
-<p>No looking back up the page. Getting one wrong here is more useful than getting it right by peeking — the effort of retrieval is what makes it stick.</p>
+<p>No looking back up the page. Getting one wrong here is more useful than getting it right by peeking; the effort of retrieval is what makes it stick.</p>
 
 <div class="quiz" data-quiz='[
   {
@@ -114,7 +114,7 @@ for x in a:
       "It fails on memory, not on the time"
     ],
     "a": 0,
-    "why": "n² = 4·10<sup>10</sup>, roughly 400× the ~10<sup>8</sup> budget — and that is before Python&rsquo;s own tax. n ≤ 2·10<sup>5</sup> is the classic signal for an O(n log n) intended solution."
+    "why": "n² = 4·10<sup>10</sup>, roughly 400× the ~10<sup>8</sup> budget, and that is before Python&rsquo;s own tax. n ≤ 2·10<sup>5</sup> is the classic signal for an O(n log n) intended solution."
   },
   {
     "q": "A problem says <code>1 ≤ n ≤ 1000</code>. What is the setter most likely telling you?",
@@ -130,13 +130,13 @@ for x in a:
   {
     "q": "Your solution is O(n log n). The constraint is <code>n ≤ 5·10<sup>5</sup></code>. Roughly how many operations is that?",
     "opts": [
-      "About 10<sup>7</sup> — comfortably inside budget",
-      "About 10<sup>11</sup> — far outside the budget",
-      "About 10<sup>3</sup> — far too small to matter",
-      "About 10<sup>9</sup> — slightly over the budget"
+      "About 10<sup>7</sup>, comfortably inside budget",
+      "About 10<sup>11</sup>, far outside the budget",
+      "About 10<sup>3</sup>, far too small to matter",
+      "About 10<sup>9</sup>, slightly over the budget"
     ],
     "a": 0,
-    "why": "log₂(5·10<sup>5</sup>) ≈ 19, so n log n ≈ 5·10<sup>5</sup> × 19 ≈ 10<sup>7</sup>. Note how gentle the log factor is — it multiplies by ~19, where squaring would multiply by 500,000."
+    "why": "log₂(5·10<sup>5</sup>) ≈ 19, so n log n ≈ 5·10<sup>5</sup> × 19 ≈ 10<sup>7</sup>. Note how gentle the log factor is: it multiplies by ~19, where squaring would multiply by 500,000."
   },
   {
     "q": "Why does O(n²) drop the ÷2, when the pair-checking loop really runs only n²/2 times?",
@@ -147,7 +147,7 @@ for x in a:
       "Judges always double the time limit for it"
     ],
     "a": 0,
-    "why": "Big O captures how cost <em>grows</em> with n. Halving 4·10<sup>10</sup> still leaves you 200× over budget — the constant never rescues a wrong complexity class, so the notation ignores it."
+    "why": "Big O captures how cost <em>grows</em> with n. Halving 4·10<sup>10</sup> still leaves you 200× over budget; the constant never rescues a wrong complexity class, so the notation ignores it."
   },
   {
     "q": "You need to check membership repeatedly inside a loop over n items. Which line keeps the whole thing O(n) in Python?",
@@ -158,7 +158,7 @@ for x in a:
       "<code>if x in tuple(seen):</code>"
     ],
     "a": 0,
-    "why": "A set lookup is O(1); scanning a list is O(n), which turns your loop into O(n²) invisibly. This is the single most common way Python beginners TLE — the code looks identical."
+    "why": "A set lookup is O(1); scanning a list is O(n), which turns your loop into O(n²) invisibly. This is the single most common way Python beginners TLE; the code looks identical."
   },
   {
     "q": "Constraints say <code>n ≤ 10<sup>18</sup></code>. What does this almost certainly mean?",
@@ -169,42 +169,42 @@ for x in a:
       "Store all values inside a set and look them up"
     ],
     "a": 0,
-    "why": "You cannot even <em>count</em> to 10<sup>18</sup>. When n is astronomically large, n is a value to compute with, not a collection to iterate — the answer is O(log n) or O(1)."
+    "why": "You cannot even <em>count</em> to 10<sup>18</sup>. When n is astronomically large, n is a value to compute with, not a collection to iterate; the answer is O(log n) or O(1)."
   }
 ]'></div>
 
-<h2>Your turn — do this before the next lesson</h2>
+<h2>Your turn: do this before the next lesson</h2>
 
 <p>Open the <a href="https://cses.fi/problemset/task/1083">CSES problem “Missing Number”</a>. Do <strong>not</strong> solve it yet. Instead:</p>
 
 <ol>
   <li>Find the constraint on <span class="mono">n</span>.</li>
   <li>Write down, on paper, the complexity you are allowed.</li>
-  <li>Only then write the solution — and check that what you wrote matches the budget you set.</li>
+  <li>Only then write the solution, and check that what you wrote matches the budget you set.</li>
 </ol>
 
 <p>Tell me what you wrote down and I'll tell you whether your reasoning was right, separately from whether your code was.</p>
 
 <div class="footer">
   <h3>Notes</h3>
-  <p><span class="mono">1.</span> <a href="https://usaco.guide/bronze/time-comp">USACO Guide — Time Complexity</a>: <em>“a conservative estimate for the number of operations the grading server can handle per second is 10<sup>8</sup>, but it could be closer to 5·10<sup>8</sup> given good constant factors.”</em></p>
-  <p><span class="mono">2.</span> Formally: <em>if there exist positive constants n₀ and c such that f(n) ≤ c·g(n) whenever n ≥ n₀, we say f(n) = O(g(n))</em> (same source). You will not need this definition to compete — but it is what licenses throwing away the ÷2.</p>
+  <p><span class="mono">1.</span> <a href="https://usaco.guide/bronze/time-comp">USACO Guide: Time Complexity</a>: <em>“a conservative estimate for the number of operations the grading server can handle per second is 10<sup>8</sup>, but it could be closer to 5·10<sup>8</sup> given good constant factors.”</em></p>
+  <p><span class="mono">2.</span> Formally: <em>if there exist positive constants n₀ and c such that f(n) ≤ c·g(n) whenever n ≥ n₀, we say f(n) = O(g(n))</em> (same source). You will not need this definition to compete, but it is what licenses throwing away the ÷2.</p>
 
   <h3>Read this next</h3>
-  <p><strong>Primary source:</strong> <a href="https://usaco.guide/bronze/time-comp">USACO Guide — Time Complexity (Bronze)</a>. Fifteen minutes, free, and the most trustworthy treatment of exactly this topic. Read down to the end of the complexity table.</p>
+  <p><strong>Primary source:</strong> <a href="https://usaco.guide/bronze/time-comp">USACO Guide: Time Complexity (Bronze)</a>. Fifteen minutes, free, and the most trustworthy treatment of exactly this topic. Read down to the end of the complexity table.</p>
 
   <h3>Related in this workspace</h3>
   <ul>
-    <li>Next: <a href="0002-counting-loops.html">Lesson 0002 — Counting loops</a></li>
-    <li>Then: <a href="0003-where-log-n-comes-from.html">Lesson 0003 — Where <em>log n</em> comes from</a> (it answers the “where does log n come from?” question below)</li>
-    <li>Reference: <a href="../reference/complexity-budget.html">The Complexity Budget Table</a> — print it</li>
-    <li>Reference: <a href="../reference/technique-by-budget.html">Technique by Budget</a> — the templates</li>
+    <li>Next: <a href="0002-counting-loops.html">Lesson 0002: Counting loops</a></li>
+    <li>Then: <a href="0003-where-log-n-comes-from.html">Lesson 0003: Where <em>log n</em> comes from</a> (it answers the “where does log n come from?” question below)</li>
+    <li>Reference: <a href="../reference/complexity-budget.html">The Complexity Budget Table</a>: print it</li>
+    <li>Reference: <a href="../reference/technique-by-budget.html">Technique by Budget</a>: the templates</li>
     <li>Mission: <a href="../MISSION.md">why we are doing this</a></li>
     <li>All resources: <a href="../RESOURCES.md">RESOURCES.md</a></li>
   </ul>
 
   <div class="ask">
-    <strong>Stuck on anything here?</strong> Ask me. I'm your teacher for this workspace — “where does log n actually come from?”, “why is a set O(1)?”, “is my solution O(n) or O(n²)?” are all fair game, and answering them is more useful than moving on with a gap.
+    <strong>Stuck on anything here?</strong> Ask me. I'm your teacher for this workspace: “where does log n actually come from?”, “why is a set O(1)?”, “is my solution O(n) or O(n²)?” are all fair game, and answering them is more useful than moving on with a gap.
   </div>
 </div>
 
