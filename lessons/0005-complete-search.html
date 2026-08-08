@@ -187,10 +187,10 @@ for assign in product(range(k), repeat=n):    <span class="cmt"># k^n tuples</sp
   {
     "q": "Does pruning a backtracking search change its time complexity?",
     "opts": [
-      "No, it changes only the constant factor",
-      "Yes, it makes the search fully linear",
-      "Yes, it removes one factor of n",
-      "No, and it never helps in practice"
+      "No, it changes only the constant",
+      "Yes, it makes the search linear",
+      "Yes, it removes a factor of n",
+      "No, and it never helps at all"
     ],
     "a": 0,
     "why": "The worst case is still O(2<sup>n</sup>): pruning cannot rule out an input where nothing gets pruned. But the constant can improve by a factor of thousands. This is a rare case where “still exponential” and “now passes” are both true."
